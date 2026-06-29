@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+
 import {
   BarChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell  // <-- add PieChart, Pie, Cell here
@@ -22,10 +23,7 @@ function OPCRDashboard({ role, activeTab, setActiveTab }) {
 ];
 
 
-  const [opcrData, setOpcrData] = useState(() => {
-    const saved = localStorage.getItem("opcrData");
-    return saved ? JSON.parse(saved) : defaultData;
-  });
+ const [opcrData, setOpcrData] = useState([]);
 
  const [formData, setFormData] = useState({
   year: new Date().getFullYear(),
@@ -63,47 +61,115 @@ function OPCRDashboard({ role, activeTab, setActiveTab }) {
   const [editUserIndex, setEditUserIndex] = useState(null);
   const [editUserData, setEditUserData] = useState({ username: "", password: "", role: "guest" });
 
+useEffect(() => {
+  fetch("http://localhost:5000/api/opcr")
+    .then(res => res.json())
+    .then(data => {
+      console.log("Loaded from MySQL:", data.length);
+      setOpcrData(data);
+    })
+    .catch(err => {
+      console.error("Failed to load data:", err);
+    });
+}, []);
+
   useEffect(() => localStorage.setItem("opcrData", JSON.stringify(opcrData)), [opcrData]);
   useEffect(() => localStorage.setItem("users", JSON.stringify(users)), [users]);
 
   /* ===================== HANDLERS ===================== */
-  const handleChange = e => {
-    const value = e.target.type === "number" ? Number(e.target.value) : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
-  };
 
-  const handleSubmit = e => {
-    e.preventDefault();
+const handleChange = e => {
+  const value =
+    e.target.type === "number"
+      ? Number(e.target.value)
+      : e.target.value;
 
-   const payload = {
-  ...formData,
-  year: Number(formData.year) // ✅ force number
+  setFormData({
+    ...formData,
+    [e.target.name]: value
+  });
 };
 
-if (editId) {
-  setOpcrData(opcrData.map(d => d.id === editId ? { ...d, ...payload } : d));
-} else {
-  setOpcrData([...opcrData, { ...payload, id: Date.now() }]);
-}
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-
-    setFormData({ year: "", operatingUnit: "", pap: "", kpi: "", target: 0, accomplishment: 0, timeline: "", focalPerson: "" });
-    setEditId(null);
+  const payload = {
+    ...formData,
+    year: Number(formData.year)
   };
 
-  const handleEdit = id => {
-    const item = opcrData.find(d => d.id === id);
-    setFormData(item);
-    setEditId(id);
-    setTimeout(() => kpiInputRef.current?.focus(), 100);
-  };
-
-  const handleDelete = id => {
-    if (window.confirm("Delete KPI?")) {
-      setOpcrData(opcrData.filter(d => d.id !== id));
+  try {
+    if (editId) {
+      await fetch(`http://localhost:5000/api/opcr/${editId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      await fetch("http://localhost:5000/api/opcr", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
     }
-  };
 
+    // Reload data from MySQL
+    const res = await fetch("http://localhost:5000/api/opcr");
+    const data = await res.json();
+    setOpcrData(data);
+
+    setFormData({
+      year: new Date().getFullYear(),
+      operatingUnit: "",
+      pap: "",
+      kpi: "",
+      target: 0,
+      accomplishment: 0,
+      timeline: "",
+      focalPerson: ""
+    });
+
+    setEditId(null);
+
+  } catch (err) {
+    console.error(err);
+    alert("Unable to save KPI.");
+  }
+};
+
+const handleEdit = id => {
+  const item = opcrData.find(d => d.id === id);
+  setFormData(item);
+  setEditId(id);
+  setTimeout(() => kpiInputRef.current?.focus(), 100);
+};
+
+const handleDelete = async (id) => {
+
+  if (!window.confirm("Delete KPI?")) return;
+
+  try {
+
+    await fetch(`http://localhost:5000/api/opcr/${id}`, {
+      method: "DELETE"
+    });
+
+    // Reload latest data from MySQL
+    const res = await fetch("http://localhost:5000/api/opcr");
+    const data = await res.json();
+
+    setOpcrData(data);
+
+  } catch (err) {
+    console.error(err);
+    alert("Unable to delete KPI.");
+  }
+
+};
   /* ===================== FILTERED DATA ===================== */
   const filteredData = opcrData.filter(d =>
   (!filterYear || Number(d.year) === Number(filterYear)) &&
