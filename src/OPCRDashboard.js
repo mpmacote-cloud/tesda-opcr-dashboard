@@ -19,10 +19,10 @@ function OPCRDashboard({ role, activeTab, setActiveTab }) {
   const PIE_COLORS = ["#4caf50", "#e0e0e0"];
 
   /* ===================== DATA ===================== */
-  const defaultData = [
+  /* const defaultData = [
   { id: 1, year: 2025, operatingUnit: "PO BUKIDNON", pap: "TESD Program", kpi: "Beneficiaries", target: 100, accomplishment: 60, timeline: "Semestral", focalPerson: "JCDD" },
   { id: 2, year: 2025, operatingUnit: "PO BUKIDNON", pap: "Certification", kpi: "Trainees", target: 50, accomplishment: 45, timeline: "Quarterly", focalPerson: "HCC" }
-];
+];*/
 
 
  const [opcrData, setOpcrData] = useState([]);
@@ -241,7 +241,7 @@ const yearlyOverallAccomplishment = filteredData.reduce((acc, d) => {
 
 const totalItems = filteredData.length || 1; // prevent divide by zero
 
-const yearlyOverallAccomplishmentData = [
+/*const yearlyOverallAccomplishmentData = [
   {
     name: "Accomplished",
     value: Number(((yearlyOverallAccomplishment / totalItems) * 100).toFixed(1))
@@ -250,7 +250,7 @@ const yearlyOverallAccomplishmentData = [
     name: "Remaining",
     value: Number((100 - ((yearlyOverallAccomplishment / totalItems) * 100)).toFixed(1))
   }
-];
+];*/
 
   // PAP Performance Rating (%)
   const papPerformanceData = Object.values(
@@ -329,26 +329,6 @@ const yearlyOverallData = [
   { name: "Remaining", value: Number((100 - totalRating * 100).toFixed(1)) }
 ];
 
-const COLORS = ["#4caf50", "#e0e0e0"];
-
-/* ===================== YEAR COMPARISON DATA ===================== */
-const yearComparisonData = Object.values(
-  filteredData.reduce((acc, d) => {
-    const year = d.year;
-    if (!acc[year]) {
-      acc[year] = { year, target: 0, acc: 0 };
-    }
-    acc[year].target += d.target;
-    acc[year].acc += d.accomplishment;
-    return acc;
-  }, {})
-).map(y => ({
-  year: y.year,
-  Target: y.target,
-  Accomplishment: y.acc,
-  Rating: y.target ? Number(((y.acc / y.target) * 100).toFixed(1)) : 0
-}));
-
 // TOP 10 LOWEST PERFORMING KPIs
 const lowestPerformingKPIs = [...filteredData]
   .map(d => ({
@@ -383,13 +363,6 @@ const topBestKPIs = [...filteredData]
   .slice(0, 5);
 
   /* ===================== EXPORT ===================== */
-  const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filteredData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "OPCR");
-    XLSX.writeFile(wb, "OPCR.xlsx");
-  };
-
   const exportChartToPDF = () => {
     html2canvas(chartRef.current).then(canvas => {
       const pdf = new jsPDF();
@@ -433,31 +406,6 @@ const overallRating = filteredData.length
       filteredData.length
     ) * 100
   : 0;
-
-const totalAccomplishment = filteredData.reduce(
-  (sum, d) => sum + Number(d.accomplishment || 0),
-  0
-);
-
-
-
-const completedPAPs = Object.values(
-  filteredData.reduce((acc, d) => {
-    if (!acc[d.pap]) {
-      acc[d.pap] = {
-        target: 0,
-        accomplishment: 0
-      };
-    }
-
-    acc[d.pap].target += Number(d.target || 0);
-    acc[d.pap].accomplishment += Number(d.accomplishment || 0);
-
-    return acc;
-  }, {})
-).filter(
-  p => p.target > 0 && p.accomplishment >= p.target
-).length;
 
 const onTrackCount = filteredData.filter(d => {
   const rating = d.target
@@ -757,7 +705,7 @@ setFilterTimeline(""); }}>
 >
 
   <SummaryCard
-    title="✅ On Track"
+    title="🟢 On Track"
     value={onTrackCount}
     color="#4caf50"
   />
@@ -1612,7 +1560,6 @@ const container = { padding: 20, background: "#f4f6f8", minHeight: "100vh" };
 const box = { background: "#fff", padding: 20, marginTop: 20, borderRadius: 10 };
 const form = { display: "flex", gap: 10, flexWrap: "wrap" };
 const btn = { padding: "8px 16px", background: "#1976d2", color: "#fff", border: "none", borderRadius: 5 };
-const tab = active => ({ padding: "8px 16px", marginRight: 10, background: active ? "#1976d2" : "#ddd", color: active ? "#fff" : "#000", border: "none", borderRadius: 5 });
 const filterRow = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
