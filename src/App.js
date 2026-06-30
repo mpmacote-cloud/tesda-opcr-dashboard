@@ -10,24 +10,35 @@ function App() {
   const [showPrivacy, setShowPrivacy] = useState(true);
   const [activeTab, setActiveTab] = useState("opcr");
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const savedUsers = JSON.parse(localStorage.getItem("users")) || [
-      { username: "admin", password: "nimda", role: "admin" },
-      { username: "guest", password: "guest", role: "guest" },
-    ];
-    const user = savedUsers.find(
-      (u) =>
-        u.username === loginData.username && u.password === loginData.password
-    );
-    if (user) {
-      setRole(user.role);
+  const handleLogin = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch("http://localhost:5000/api/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(loginData),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      setRole(result.role);
       setShowLogin(false);
-      setLoginData({ username: "", password: "" });
+      setLoginData({
+        username: "",
+        password: "",
+      });
     } else {
       alert("Invalid username or password!");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Cannot connect to the server.");
+  }
+};
 
   const handleLogout = () => setRole(null);
 

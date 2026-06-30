@@ -1,3 +1,5 @@
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 import React, { useState, useEffect, useRef } from "react";
 
 import {
@@ -49,18 +51,26 @@ function OPCRDashboard({ role, activeTab, setActiveTab }) {
   const [filterTimeline, setFilterTimeline] = useState("");
 
   /* ===================== USERS ===================== */
-  const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem("users");
-    return saved ? JSON.parse(saved) : [
-      { username: "admin", password: "nimda", role: "admin" },
-      { username: "guest", password: "guest", role: "guest" }
-    ];
-  });
+const [users, setUsers] = useState([]);
 
   const [newUser, setNewUser] = useState({ username: "", password: "", role: "guest" });
   const [editUserIndex, setEditUserIndex] = useState(null);
   const [editUserData, setEditUserData] = useState({ username: "", password: "", role: "guest" });
 
+
+const loadUsers = () => {
+  fetch("http://localhost:5000/api/users")
+    .then(res => res.json())
+    .then(data => {
+      console.log("Loaded users:", data.length);
+      setUsers(data);
+    })
+    .catch(err => {
+      console.error("Failed to load users:", err);
+    });
+};
+
+// Load KPI records
 useEffect(() => {
   fetch("http://localhost:5000/api/opcr")
     .then(res => res.json())
@@ -73,8 +83,13 @@ useEffect(() => {
     });
 }, []);
 
+// Load users
+useEffect(() => {
+  loadUsers();
+}, []);
+
   useEffect(() => localStorage.setItem("opcrData", JSON.stringify(opcrData)), [opcrData]);
-  useEffect(() => localStorage.setItem("users", JSON.stringify(users)), [users]);
+ 
 
   /* ===================== HANDLERS ===================== */
 
@@ -467,6 +482,20 @@ const interventionCount = filteredData.filter(d => {
 
   return rating <= 50;
 }).length;
+
+/* ===================== EXECUTIVE STATUS ===================== */
+
+const ongoingKPIs = filteredData.filter(d => {
+  return (
+    Number(d.accomplishment) > 0 &&
+    Number(d.accomplishment) < Number(d.target)
+  );
+}).length;
+
+const delayedKPIs = filteredData.filter(d => {
+  return Number(d.accomplishment) === 0;
+}).length;
+
   return (
     
     
@@ -496,7 +525,7 @@ const interventionCount = filteredData.filter(d => {
       lineHeight: 1.2
     }}
   >
-    TESDA Bukidnon Provincial Office OPCR Dashboard
+    TESDA Bukidnon Monitoring System
   </h1>
 
   <div
@@ -679,73 +708,90 @@ setFilterTimeline(""); }}>
   gap: 15,
   marginBottom: 20
 }}>
-  <SummaryCard
+ <SummaryCard
   title="Total KPIs"
   value={totalKPIs}
   color="#1976d2"
 />
 
 <SummaryCard
-  title="KPIs with 100% Accomplishment (Monthly/Quarterly,Semestral/Annual)"
+  title="Completed"
   value={completedKPIs}
   color="#4caf50"
 />
 
 <SummaryCard
-  title="Overall Rating"
-  value={`${overallRating.toFixed(1)}%`}
+  title="Ongoing"
+  value={ongoingKPIs}
   color="#ff9800"
 />
 
 <SummaryCard
-  title="PAPs with 100% Accomplishment (Monthly/Quarterly,Semestral/Annual)"
-  value={completedPAPs}
-  color="#9c27b0"
+  title="Delayed"
+  value={delayedKPIs}
+  color="#f44336"
 />
 </div>
  
  
-
- <h3
+<h3
   style={{
     marginBottom: 12,
-    marginTop: 10,
+    marginTop: 25,
     color: "#0038A8",
     fontWeight: "bold",
     borderLeft: "5px solid #0038A8",
     paddingLeft: 10
   }}
 >
-  KPI Status Dashboard
+  Performance Health
 </h3>
- {/* KPI STATUS DASHBOARD */}
 
 <div
   style={{
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+    gridTemplateColumns: "repeat(3,minmax(220px,1fr))",
     gap: 15,
     marginBottom: 25
   }}
 >
+
   <SummaryCard
-    title="🟢 On Track"
+    title="✅ On Track"
     value={onTrackCount}
     color="#4caf50"
   />
 
   <SummaryCard
-    title="🟡 At Risk"
+    title="🟡 Ongoing"
     value={atRiskCount}
-    color="#ffc107"
+    color="#ff9800"
   />
 
   <SummaryCard
-    title="🔴 Needs Intervention"
+    title="🔴 Delayed"
     value={interventionCount}
     color="#f44336"
   />
+
 </div>
+
+
+<div
+  style={{
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: 35
+  }}
+>
+
+  <OverallPerformanceGauge
+    value={overallRating}
+  />
+
+</div>
+
+  
 <h3
   style={{
     marginTop: 25,
@@ -1207,17 +1253,56 @@ setFilterTimeline(""); }}>
       {activeTab === "users" && role === "admin" && (
         <div style={box}>
           <h3>User Management</h3>
-          <form onSubmit={editUserIndex !== null ? e => {
-            e.preventDefault();
-            const updated = [...users];
-            updated[editUserIndex] = editUserData;
-            setUsers(updated);
-            setEditUserIndex(null);
-          } : e => {
-            e.preventDefault();
-            setUsers([...users, newUser]);
-            setNewUser({ username: "", password: "", role: "guest" });
-          }}>
+       <form
+  onSubmit={async (e) => {
+    e.preventDefault();
+
+    try {
+
+      if (editUserIndex !== null) {
+
+        await fetch(
+          `http://localhost:5000/api/users/${editUserData.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(editUserData)
+          }
+        );
+
+        setEditUserIndex(null);
+
+      } else {
+
+        await fetch(
+          "http://localhost:5000/api/users",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(newUser)
+          }
+        );
+
+        setNewUser({
+          username: "",
+          password: "",
+          role: "guest"
+        });
+
+      }
+
+      loadUsers();
+
+    } catch (err) {
+      console.error(err);
+      alert("Database error");
+    }
+  }}
+>
             <input placeholder="Username" value={editUserIndex !== null ? editUserData.username : newUser.username}
               onChange={e => editUserIndex !== null ? setEditUserData({ ...editUserData, username: e.target.value }) : setNewUser({ ...newUser, username: e.target.value })} />
             <input placeholder="Password" value={editUserIndex !== null ? editUserData.password : newUser.password}
@@ -1229,6 +1314,75 @@ setFilterTimeline(""); }}>
             </select>
             <button style={btn}>{editUserIndex !== null ? "Update" : "Add"} User</button>
           </form>
+
+<hr style={{ margin: "20px 0" }} />
+
+<table
+  style={{
+    width: "100%",
+    borderCollapse: "collapse"
+  }}
+>
+  <thead>
+    <tr style={{ background: "#1976d2", color: "white" }}>
+      <th>ID</th>
+      <th>Username</th>
+      <th>Role</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {users.map(user => (
+      <tr key={user.id}>
+        <td>{user.id}</td>
+        <td>{user.username}</td>
+        <td>{user.role}</td>
+
+        <td>
+
+          <button
+            style={btn}
+            onClick={() => {
+              setEditUserIndex(user.id);
+              setEditUserData(user);
+            }}
+          >
+            Edit
+          </button>
+
+          <button
+            style={{
+              ...btn,
+              background: "#d32f2f",
+              marginLeft: 8
+            }}
+            onClick={async () => {
+
+              if (!window.confirm("Delete this user?")) return;
+
+              await fetch(
+                `http://localhost:5000/api/users/${user.id}`,
+                {
+                  method: "DELETE"
+                }
+              );
+
+              loadUsers();
+
+            }}
+          >
+            Delete
+          </button>
+
+        </td>
+
+      </tr>
+    ))}
+  </tbody>
+
+</table>
+
         </div>
       )}
     </div>
@@ -1268,40 +1422,189 @@ const LegendItem = ({ color, label }) => (
 );
 
 
-/*--------------*/
-const SummaryCard = ({ title, value, color }) => (
-  <div
-    style={{
-      flex: 1,
-      minWidth: 220,
-      background: "#fff",
-      padding: 20,
-      borderRadius: 10,
-      borderLeft: `6px solid ${color}`,
-      boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
-    }}
-  >
-    <div
-      style={{
-        fontSize: 13,
-        color: "#666",
-        marginBottom: 8
-      }}
-    >
-      {title}
-    </div>
+/*------SUMMARY CARD--------*/
+const SummaryCard = ({ title, value, color }) => {
+
+  const getIcon = () => {
+
+    if (title.includes("Total"))
+      return "📊";
+
+    if (title.includes("Completed"))
+      return "✅";
+
+    if (title.includes("Ongoing"))
+      return "🟡";
+
+    if (title.includes("Delayed"))
+      return "🔴";
+
+    if (title.includes("Rating"))
+      return "⭐";
+
+    if (title.includes("PAP"))
+      return "📁";
+
+    return "📌";
+  };
+
+  return (
 
     <div
       style={{
-        fontSize: 28,
-        fontWeight: "bold",
-        color
+        background: "#ffffff",
+        borderRadius: 14,
+        padding: 20,
+        borderLeft: `7px solid ${color}`,
+        boxShadow: "0 8px 18px rgba(0,0,0,0.08)",
+        transition: "all .25s ease",
+        cursor: "pointer"
       }}
+
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-6px)";
+        e.currentTarget.style.boxShadow =
+          "0 12px 24px rgba(0,0,0,.18)";
+      }}
+
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0px)";
+        e.currentTarget.style.boxShadow =
+          "0 8px 18px rgba(0,0,0,.08)";
+      }}
+
     >
-      {value}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}
+      >
+
+        <div>
+
+          <div
+            style={{
+              fontSize: 13,
+              color: "#666",
+              fontWeight: 600,
+              marginBottom: 8
+            }}
+          >
+            {title}
+          </div>
+
+          <div
+            style={{
+              fontSize: 34,
+              fontWeight: "bold",
+              color
+            }}
+          >
+            {value}
+          </div>
+
+        </div>
+
+        <div
+          style={{
+            fontSize: 42
+          }}
+        >
+          {getIcon()}
+        </div>
+
+      </div>
+
     </div>
-  </div>
-);
+
+  );
+
+};
+
+/*------OVERALL PERFORMANCE GAUGE--------*/
+const OverallPerformanceGauge = ({ value }) => {
+
+  const color =
+    value >= 75
+      ? "#4caf50"
+      : value >= 50
+      ? "#ff9800"
+      : "#f44336";
+
+  return (
+
+    <div
+     style={{
+  background: "#fff",
+  borderRadius: 16,
+  padding: 30,
+  width: 360,
+  boxShadow: "0 8px 20px rgba(0,0,0,.10)",
+  textAlign: "center"
+}}
+    >
+
+      <h3
+        style={{
+          color: "#0038A8",
+          marginBottom: 10
+        }}
+      >
+        Overall Performance Rating
+      </h3>
+
+      <div
+        style={{
+          width: 220,
+          height: 220,
+          margin: "auto"
+        }}
+      >
+        <CircularProgressbar
+          value={value}
+          text={`${value.toFixed(1)}%`}
+          styles={buildStyles({
+            pathColor: color,
+            textColor: color,
+            trailColor: "#eeeeee",
+            textSize: "16px"
+          })}
+        />
+      </div>
+
+      <h2
+        style={{
+          marginTop: 10,
+          color
+        }}
+      >
+        {
+          value >= 75
+            ? "Excellent"
+            : value >= 50
+            ? "Needs Attention"
+            : "Critical"
+
+    
+        }
+      </h2>
+<p
+  style={{
+    marginTop: 15,
+    color: "#666",
+    fontSize: 14
+  }}
+>
+  Overall accomplishment across all KPIs
+</p>
+    </div>
+
+  );
+
+};
 
 
 /* ===================== STYLES ===================== */
