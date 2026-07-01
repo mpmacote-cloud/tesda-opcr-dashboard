@@ -8,7 +8,6 @@ import {
 } from "recharts";
 
 
-import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
@@ -232,7 +231,7 @@ const yearlyPerformanceData = Object.values(
 }));
 
 // Yearly Overall Accomplishment (%) — average across all PAP/KPI for the selected year
-const yearlyOverallAccomplishment = filteredData.reduce((acc, d) => {
+/*const yearlyOverallAccomplishment = filteredData.reduce((acc, d) => {
   if (!d.year) return acc;
   return acc + (d.target
   ? Math.min(d.accomplishment / d.target, 1)

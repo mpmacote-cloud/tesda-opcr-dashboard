@@ -98,7 +98,22 @@ function App() {
             <div className="privacy-banner">
               <p>
                 We respect your privacy. By using this system, you agree to our&nbsp;
-                <a href="#">Privacy Notice</a>.
+                <button
+  type="button"
+  className="privacy-link"
+  onClick={() => alert("Privacy Notice coming soon.")}
+  style={{
+    background: "none",
+    border: "none",
+    color: "#1976d2",
+    textDecoration: "underline",
+    cursor: "pointer",
+    padding: 0,
+    font: "inherit"
+  }}
+>
+  Privacy Notice
+</button>
               </p>
               <button className="privacy-btn" onClick={() => setShowPrivacy(false)}>Agree</button>
             </div>
