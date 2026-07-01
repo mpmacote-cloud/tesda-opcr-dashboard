@@ -61,11 +61,19 @@ const loadUsers = () => {
   fetch("http://localhost:5000/api/users")
     .then(res => res.json())
     .then(data => {
-      console.log("Loaded users:", data.length);
-      setUsers(data);
+
+      if (Array.isArray(data)) {
+        console.log("Loaded users:", data.length);
+        setUsers(data);
+      } else {
+        console.warn("Invalid users response:", data);
+        setUsers([]);
+      }
+
     })
     .catch(err => {
       console.error("Failed to load users:", err);
+      setUsers([]);
     });
 };
 
@@ -74,11 +82,19 @@ useEffect(() => {
   fetch("http://localhost:5000/api/opcr")
     .then(res => res.json())
     .then(data => {
-      console.log("Loaded from MySQL:", data.length);
-      setOpcrData(data);
+
+      if (Array.isArray(data)) {
+        console.log("Loaded from MySQL:", data.length);
+        setOpcrData(data);
+      } else {
+        console.warn("Invalid API response:", data);
+        setOpcrData([]);
+      }
+
     })
     .catch(err => {
       console.error("Failed to load data:", err);
+      setOpcrData([]);
     });
 }, []);
 
