@@ -4,7 +4,7 @@ const db = require("../db");
 
 /* ================= GET ALL ================= */
 
-/*router.get("/", (req, res) => {
+router.get("/", (req, res) => {
   db.query(
     "SELECT * FROM opcr_records ORDER BY year DESC",
     (err, results) => {
@@ -16,8 +16,8 @@ const db = require("../db");
       res.json(results);
     }
   );
-});*/
-router.get("/", (req, res) => {
+});
+/*router.get("/", (req, res) => {
   db.query(
     "SELECT DATABASE() AS database_name, COUNT(*) AS total FROM opcr_records",
     (err, results) => {
@@ -29,7 +29,7 @@ router.get("/", (req, res) => {
       res.json(results);
     }
   );
-});
+});*/
 
 
 /* ================= CREATE ================= */
