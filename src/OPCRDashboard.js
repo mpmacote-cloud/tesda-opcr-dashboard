@@ -565,13 +565,8 @@ const delayedKPIs = filteredData.filter(d => {
 
 >
   <option value="">All Operating Units</option>
-  <option value="RO X">RO X</option>
   <option value="PO BUKIDNON">PO BUKIDNON</option>
   <option value="PTC BUKIDNON">PTC BUKIDNON</option>
-  <option value="PO LANAO DEL NORTE">PO LANAO DEL NORTE</option>
-  <option value="PO CAMIGUIN">PO CAMIGUIN</option>
-  <option value="PO MISAMIS ORIENTAL">PO MISAMIS ORIENTAL</option>
-  <option value="PO MISAMIS OCCIDENTAL">PO MISAMIS OCCIDENTAL</option>
 </select>
 
             <select
@@ -1175,13 +1170,9 @@ setFilterTimeline(""); }}>
     }}
   >
     <option value="">Select Operating Unit</option>
-    <option value="RO X">RO X</option>
     <option value="PO BUKIDNON">PO BUKIDNON</option>
       <option value="PTC BUKIDNON">PTC BUKIDNON</option>
-    <option value="PO LANAO DEL NORTE">PO LANAO DEL NORTE</option>
-    <option value="PO CAMIGUIN">PO CAMIGUIN</option>
-     <option value="PO MISAMIS ORIENTAL">PO MISAMIS ORIENTAL</option>
-      <option value="PO MISAMIS OCCIDENTAL">PO MISAMIS OCCIDENTAL</option>
+ 
   </select>
 ) : (
   <input
