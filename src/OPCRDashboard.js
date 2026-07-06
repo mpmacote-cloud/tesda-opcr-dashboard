@@ -422,29 +422,29 @@ const overallRating = filteredData.length
     ) * 100
   : 0;
 
-const onTrackCount = filteredData.filter(d => {
+/*const onTrackCount = filteredData.filter(d => {
   const rating = d.target
     ? (d.accomplishment / d.target) * 100
     : 0;
 
   return rating >= 75;
-}).length;
+}).length;*/
 
-const atRiskCount = filteredData.filter(d => {
+/*const atRiskCount = filteredData.filter(d => {
   const rating = d.target
     ? (d.accomplishment / d.target) * 100
     : 0;
 
   return rating > 50 && rating < 75;
-}).length;
+}).length;*/
 
-const interventionCount = filteredData.filter(d => {
+/*const interventionCount = filteredData.filter(d => {
   const rating = d.target
     ? (d.accomplishment / d.target) * 100
     : 0;
 
   return rating <= 50;
-}).length;
+}).length;*/
 
 /* ===================== EXECUTIVE STATUS ===================== */
 
@@ -692,50 +692,6 @@ setFilterTimeline(""); }}>
 />
 </div>
  
- 
-<h3
-  style={{
-    marginBottom: 12,
-    marginTop: 25,
-    color: "#0038A8",
-    fontWeight: "bold",
-    borderLeft: "5px solid #0038A8",
-    paddingLeft: 10
-  }}
->
-  Performance Health
-</h3>
-
-<div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(3,minmax(220px,1fr))",
-    gap: 15,
-    marginBottom: 25
-  }}
->
-
-  <SummaryCard
-    title="🟢 On Track"
-    value={onTrackCount}
-    color="#4caf50"
-  />
-
-  <SummaryCard
-    title="🟡 Ongoing"
-    value={atRiskCount}
-    color="#ff9800"
-  />
-
-  <SummaryCard
-    title="🔴 Delayed"
-    value={interventionCount}
-    color="#f44336"
-  />
-
-</div>
-
-
 <div
   style={{
     display: "flex",
