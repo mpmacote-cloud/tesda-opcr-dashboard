@@ -914,10 +914,19 @@ setFilterTimeline(""); }}>
     borderRadius: 10,
     padding: 15,
     marginBottom: 25,
-    boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
   }}
 >
-  <table width="100%" cellPadding="8">
+  <table
+  width="100%"
+  cellPadding="8"
+  style={{
+    minWidth: "900px",
+    borderCollapse: "collapse"
+  }}
+>
     <thead>
       <tr>
         <th>Rank</th>
@@ -975,10 +984,19 @@ setFilterTimeline(""); }}>
     borderRadius: 10,
     padding: 15,
     marginBottom: 25,
-    boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+    boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
   }}
 >
-  <table width="100%" cellPadding="8">
+  <table
+  width="100%"
+  cellPadding="8"
+  style={{
+    minWidth: "900px",
+    borderCollapse: "collapse"
+  }}
+>
     <thead>
       <tr>
         <th>Rank</th>
