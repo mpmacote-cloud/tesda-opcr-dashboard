@@ -403,24 +403,26 @@ const getPerformanceColor = (value) => {
 /* ===================== EXECUTIVE STATUS ===================== */
 const totalKPIs = filteredData.length;
 
-const completedKPIs = filteredData.filter(
-  d => d.accomplishment >= d.target
-).length;
+// ===================== COMPLETED =====================
+const completedKPIs = filteredData.filter(d => {
+  return Number(d.accomplishment) >= Number(d.target);
+}).length;
 
+// ===================== OVERALL RATING =====================
 const overallRating = filteredData.length
   ? (
       filteredData.reduce(
         (sum, d) =>
           sum +
-          (d.target
-            ? Math.min(d.accomplishment / d.target, 1)
+          (Number(d.target)
+            ? Math.min(Number(d.accomplishment) / Number(d.target), 1)
             : 0),
         0
-      ) /
-      filteredData.length
+      ) / filteredData.length
     ) * 100
   : 0;
 
+// ===================== ONGOING =====================
 const ongoingKPIs = filteredData.filter(d => {
   return (
     Number(d.accomplishment) > 0 &&
@@ -428,30 +430,12 @@ const ongoingKPIs = filteredData.filter(d => {
   );
 }).length;
 
-/*const delayedKPIs = filteredData.filter(d => {
+// ===================== DELAYED =====================
+const delayedKPIs = filteredData.filter(d => {
   return Number(d.accomplishment) === 0;
-}).length; */
+}).length;
 
-const delayedList = filteredData.filter(d => Number(d.accomplishment) === 0);
-
-console.log("Delayed KPIs:", delayedList.length);
-
-// Show records around the suspicious IDs
-console.table(
-  filteredData
-    .filter(d => d.id >= 40 && d.id <= 60)
-    .map(d => ({
-      id: d.id,
-      target: d.target,
-      accomplishment: d.accomplishment,
-      accomplishmentNumber: Number(d.accomplishment),
-      type: typeof d.accomplishment
-    }))
-);
-
-const delayedKPIs = delayedList.length;
-
-
+// ===================== SUMMARY =====================
 console.log({
   total: totalKPIs,
   completed: completedKPIs,
@@ -460,30 +444,29 @@ console.log({
   sum: completedKPIs + ongoingKPIs + delayedKPIs
 });
 
-filteredData.forEach(d => {
-  const completed = Number(d.accomplishment) >= Number(d.target);
+// ===================== CHECK FOR OVERLAPS =====================
+const overlaps = filteredData.filter(d => {
+
+  const completed =
+    Number(d.accomplishment) >= Number(d.target);
+
   const ongoing =
     Number(d.accomplishment) > 0 &&
     Number(d.accomplishment) < Number(d.target);
-  const delayed =
-    Number(d.accomplishment) <= 0 ||
-    d.accomplishment == null;
 
-  if (
-    (completed && ongoing) ||
-    (completed && delayed) ||
-    (ongoing && delayed)
-  ) {
-    console.log("Duplicate classification:", {
-      id: d.id,
-      target: d.target,
-      accomplishment: d.accomplishment,
-      completed,
-      ongoing,
-      delayed
-    });
-  }
+  const delayed =
+    Number(d.accomplishment) === 0;
+
+  return (
+    (completed ? 1 : 0) +
+    (ongoing ? 1 : 0) +
+    (delayed ? 1 : 0) > 1
+  );
+
 });
+
+console.log("Overlap count:", overlaps.length);
+console.table(overlaps);
   return (
     
     
