@@ -1318,7 +1318,7 @@ setFilterTimeline(""); }}>
         </div>
       )}
 
-{/* ===================== FOOTER ===================== */}
+ {/* ===================== FOOTER ===================== */}
 <footer
   style={{
     marginTop: 40,
@@ -1434,6 +1434,10 @@ setFilterTimeline(""); }}>
     All Rights Reserved
   </div>
 </footer>
+      
+    </div>
+  );
+}
 
 /* ===================== HELPERS ===================== */
 const ChartBox = ({ title, annotation, children }) => (
