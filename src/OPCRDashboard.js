@@ -400,8 +400,7 @@ const getPerformanceColor = (value) => {
   return "#28A745";                      // Green
 };
 
-
-/*-----------------*/
+/* ===================== EXECUTIVE STATUS ===================== */
 const totalKPIs = filteredData.length;
 
 const completedKPIs = filteredData.filter(
@@ -422,32 +421,6 @@ const overallRating = filteredData.length
     ) * 100
   : 0;
 
-/*const onTrackCount = filteredData.filter(d => {
-  const rating = d.target
-    ? (d.accomplishment / d.target) * 100
-    : 0;
-
-  return rating >= 75;
-}).length;*/
-
-/*const atRiskCount = filteredData.filter(d => {
-  const rating = d.target
-    ? (d.accomplishment / d.target) * 100
-    : 0;
-
-  return rating > 50 && rating < 75;
-}).length;*/
-
-/*const interventionCount = filteredData.filter(d => {
-  const rating = d.target
-    ? (d.accomplishment / d.target) * 100
-    : 0;
-
-  return rating <= 50;
-}).length;*/
-
-/* ===================== EXECUTIVE STATUS ===================== */
-
 const ongoingKPIs = filteredData.filter(d => {
   return (
     Number(d.accomplishment) > 0 &&
@@ -458,6 +431,14 @@ const ongoingKPIs = filteredData.filter(d => {
 const delayedKPIs = filteredData.filter(d => {
   return Number(d.accomplishment) === 0;
 }).length;
+
+console.log({
+  total: totalKPIs,
+  completed: completedKPIs,
+  ongoing: ongoingKPIs,
+  delayed: delayedKPIs,
+  sum: completedKPIs + ongoingKPIs + delayedKPIs
+});
 
   return (
     
