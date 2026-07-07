@@ -1174,6 +1174,10 @@ setFilterTimeline(""); }}>
               </form>
             </div>
           )}
+
+
+
+
         </>
       )}
 
@@ -1313,6 +1317,42 @@ setFilterTimeline(""); }}>
 
         </div>
       )}
+
+ {/* FOOTER */}
+      <footer
+        style={{
+          marginTop: 40,
+          padding: "20px",
+          textAlign: "center",
+          background: "#ffffff",
+          borderTop: "1px solid #ddd",
+          color: "#666",
+          fontSize: "13px"
+        }}
+      >
+        <div
+          style={{
+            fontWeight: "bold",
+            color: "#0038A8",
+            fontSize: "16px"
+          }}
+        >
+          TESDA Bukidnon Monitoring System
+        </div>
+
+        <div>
+          Office Performance Commitment and Review (OPCR)
+        </div>
+
+        <div style={{ marginTop: 6 }}>
+          Program and Developed by <strong>Mat Perater Macote</strong>
+        </div>
+
+        <div style={{ marginTop: 4, fontSize: "12px" }}>
+          Version 1.0 • © {new Date().getFullYear()} TESDA Bukidnon Provincial Office
+        </div>
+      </footer>
+      
     </div>
   );
 }
