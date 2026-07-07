@@ -431,25 +431,17 @@ const ongoingKPIs = filteredData.filter(d => {
 /*const delayedKPIs = filteredData.filter(d => {
   return Number(d.accomplishment) === 0;
 }).length; */
+
 const delayedList = filteredData.filter(d => {
   return Number(d.accomplishment) === 0;
 });
 
-// Show a clean table in the browser console
-console.table(
-  delayedList.map(d => ({
-    id: d.id,
-    target: d.target,
-    accomplishment: d.accomplishment,
-    type: typeof d.accomplishment,
-    operatingUnit: d.operatingUnit,
-    pap: d.pap,
-    kpi: d.kpi
-  }))
-);
-
-// Print total delayed count
 console.log("Delayed KPIs:", delayedList.length);
+
+// Show ONLY the IDs
+console.log(
+  delayedList.map(d => d.id).sort((a, b) => a - b)
+);
 
 const delayedKPIs = delayedList.length;
 
