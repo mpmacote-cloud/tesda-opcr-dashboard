@@ -1318,40 +1318,92 @@ setFilterTimeline(""); }}>
         </div>
       )}
 
- {/* FOOTER */}
-      <footer
-        style={{
-          marginTop: 40,
-          padding: "20px",
-          textAlign: "center",
-          background: "#ffffff",
-          borderTop: "1px solid #ddd",
-          color: "#666",
-          fontSize: "13px"
-        }}
-      >
-        <div
-          style={{
-            fontWeight: "bold",
-            color: "#0038A8",
-            fontSize: "16px"
-          }}
-        >
-          TESDA Bukidnon Monitoring System
-        </div>
+ {/* ===================== FOOTER ===================== */}
+<footer
+  style={{
+    marginTop: 40,
+    background: "#0038A8",
+    color: "#fff",
+    padding: "25px 20px",
+    borderTop: "5px solid #E30613",
+    textAlign: "center",
+    borderRadius: "10px 10px 0 0"
+  }}
+>
+  <div
+    style={{
+      fontSize: 22,
+      fontWeight: "bold",
+      marginBottom: 8
+    }}
+  >
+    🇵🇭 TESDA Bukidnon Provincial Office
+  </div>
 
-        <div>
-          Office Performance Commitment and Review (OPCR)
-        </div>
+  <div
+    style={{
+      fontSize: 16,
+      fontWeight: 500,
+      marginBottom: 5
+    }}
+  >
+    Office Performance Commitment and Review (OPCR)
+  </div>
 
-        <div style={{ marginTop: 6 }}>
-          Program and Developed by <strong>Mat Perater Macote</strong>
-        </div>
+  <div
+    style={{
+      fontSize: 14,
+      opacity: 0.95,
+      marginBottom: 15
+    }}
+  >
+    Executive Monitoring Dashboard
+  </div>
 
-        <div style={{ marginTop: 4, fontSize: "12px" }}>
-          Version 1.0 • © {new Date().getFullYear()} TESDA Bukidnon Provincial Office
-        </div>
-      </footer>
+  <hr
+    style={{
+      border: "none",
+      borderTop: "1px solid rgba(255,255,255,.30)",
+      margin: "15px auto",
+      width: "90%"
+    }}
+  />
+
+  <div
+    style={{
+      fontSize: 14,
+      lineHeight: 1.8
+    }}
+  >
+    <strong>Program and Developed by</strong>
+    <br />
+    <span
+      style={{
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#FFD54F"
+      }}
+    >
+      Mat Perater Macote
+    </span>
+
+    <br />
+
+    Technical Support Staff
+
+    <br /><br />
+
+    Version 1.0.0
+
+    <br />
+
+    © {new Date().getFullYear()} TESDA Bukidnon Provincial Office
+
+    <br />
+
+    All Rights Reserved
+  </div>
+</footer>
       
     </div>
   );
