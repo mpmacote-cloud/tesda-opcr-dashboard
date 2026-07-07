@@ -401,80 +401,53 @@ const getPerformanceColor = (value) => {
 };
 
 /* ===================== EXECUTIVE STATUS ===================== */
+
+// Total KPI Records
 const totalKPIs = filteredData.length;
 
-// ===================== COMPLETED =====================
-const completedKPIs = filteredData.filter(d => {
-  return Number(d.accomplishment) >= Number(d.target);
+// Completed KPIs
+// Accomplishment is equal to or greater than the target
+const completedKPIs = filteredData.filter(
+  d => Number(d.accomplishment) >= Number(d.target)
+).length;
+
+// Ongoing KPIs
+// Accomplishment is greater than zero but less than the target
+const ongoingKPIs = filteredData.filter(
+  d =>
+    Number(d.accomplishment) > 0 &&
+    Number(d.accomplishment) < Number(d.target)
+).length;
+
+// Delayed / Not Started KPIs
+// Accomplishment is zero, null, undefined, or empty
+const delayedKPIs = filteredData.filter(d => {
+  const accomplishment = Number(d.accomplishment || 0);
+  return accomplishment <= 0;
 }).length;
 
-// ===================== OVERALL RATING =====================
+// Overall Performance Rating
 const overallRating = filteredData.length
   ? (
-      filteredData.reduce(
-        (sum, d) =>
-          sum +
-          (Number(d.target)
-            ? Math.min(Number(d.accomplishment) / Number(d.target), 1)
-            : 0),
-        0
-      ) / filteredData.length
+      filteredData.reduce((sum, d) => {
+        const target = Number(d.target || 0);
+        const accomplishment = Number(d.accomplishment || 0);
+
+        return sum + (
+          target > 0
+            ? Math.min(accomplishment / target, 1)
+            : 0
+        );
+      }, 0) / filteredData.length
     ) * 100
   : 0;
 
-// ===================== ONGOING =====================
-const ongoingKPIs = filteredData.filter(d => {
-  return (
-    Number(d.accomplishment) > 0 &&
-    Number(d.accomplishment) < Number(d.target)
-  );
-}).length;
+return (
 
-// ===================== DELAYED =====================
-const delayedKPIs = filteredData.filter(d => {
-  return Number(d.accomplishment) === 0;
-}).length;
+  <div style={container}>
 
-// ===================== SUMMARY =====================
-console.log({
-  total: totalKPIs,
-  completed: completedKPIs,
-  ongoing: ongoingKPIs,
-  delayed: delayedKPIs,
-  sum: completedKPIs + ongoingKPIs + delayedKPIs
-});
-
-// ===================== CHECK FOR OVERLAPS =====================
-const overlaps = filteredData.filter(d => {
-
-  const completed =
-    Number(d.accomplishment) >= Number(d.target);
-
-  const ongoing =
-    Number(d.accomplishment) > 0 &&
-    Number(d.accomplishment) < Number(d.target);
-
-  const delayed =
-    Number(d.accomplishment) === 0;
-
-  return (
-    (completed ? 1 : 0) +
-    (ongoing ? 1 : 0) +
-    (delayed ? 1 : 0) > 1
-  );
-
-});
-
-console.log("Overlap count:", overlaps.length);
-console.table(overlaps);
-  return (
-    
-    
-    <div style={container}>
-     
-
-      {activeTab === "opcr" && (
-        <>
+    {activeTab === "opcr" && (
+      <>
 
     {/* TESDA EXECUTIVE HEADER */}
 <div
@@ -669,12 +642,14 @@ setFilterTimeline(""); }}>
 </h3>
 {/* SUMMARY CARDS */}
 
- <div style={{
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-  gap: 15,
-  marginBottom: 20
-}}>
+ <div
+  style={{
+    display: "grid",
+    gridTemplateColumns:
+      "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 20
+  }}
+>
  <SummaryCard
   title="Total KPIs"
   value={totalKPIs}
@@ -1049,8 +1024,23 @@ setFilterTimeline(""); }}>
   KPI Detailed Performance Monitoring
 </h3>
           {/* TABLE */}
-        <div style={{ ...box, marginTop: 0 }}>
-            <table width="100%" border="1" cellPadding="8">
+        <div
+  style={{
+    ...box,
+    marginTop: 0,
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch"
+  }}
+>
+  <table
+  width="100%"
+  border="1"
+  cellPadding="8"
+  style={{
+    minWidth: "1200px",
+    borderCollapse: "collapse"
+  }}
+>
               <thead>
                 <tr>
                   <th>Year</th><th>Operating Unit</th><th>PAP</th><th>KPI</th><th>Target</th><th>Accomplishment</th><th>Rating %</th><th>Timeline</th><th>Focal</th>
@@ -1107,7 +1097,7 @@ setFilterTimeline(""); }}>
       display: "flex",
       flexDirection: "column",
       gap: 4,
-      minWidth: 180
+      flex: "1 1 220px"
     }}
   >
     <label
@@ -1320,7 +1310,7 @@ const ChartBox = ({ title, annotation, children }) => (
       </div>
     )}
 
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer width="100%" height={280}>
       {children}
     </ResponsiveContainer>
   </div>
@@ -1457,11 +1447,13 @@ const OverallPerformanceGauge = ({ value }) => {
   return (
 
     <div
-     style={{
+    style={{
   background: "#fff",
   borderRadius: 16,
-  padding: 30,
-  width: 360,
+  padding: 20,
+  width: "100%",
+  maxWidth: 360,
+  margin: "0 auto",
   boxShadow: "0 8px 20px rgba(0,0,0,.10)",
   textAlign: "center"
 }}
@@ -1528,7 +1520,13 @@ const OverallPerformanceGauge = ({ value }) => {
 
 
 /* ===================== STYLES ===================== */
-const container = { padding: 20, background: "#f4f6f8", minHeight: "100vh" };
+const container = {
+  padding: 15,
+  background: "#f4f6f8",
+  minHeight: "100vh",
+  maxWidth: "1600px",
+  margin: "0 auto"
+};
 const box = { background: "#fff", padding: 20, marginTop: 20, borderRadius: 10 };
 const form = { display: "flex", gap: 10, flexWrap: "wrap" };
 const btn = { padding: "8px 16px", background: "#1976d2", color: "#fff", border: "none", borderRadius: 5 };
