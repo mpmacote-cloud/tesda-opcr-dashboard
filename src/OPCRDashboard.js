@@ -440,6 +440,30 @@ console.log({
   sum: completedKPIs + ongoingKPIs + delayedKPIs
 });
 
+filteredData.forEach(d => {
+  const completed = Number(d.accomplishment) >= Number(d.target);
+  const ongoing =
+    Number(d.accomplishment) > 0 &&
+    Number(d.accomplishment) < Number(d.target);
+  const delayed =
+    Number(d.accomplishment) <= 0 ||
+    d.accomplishment == null;
+
+  if (
+    (completed && ongoing) ||
+    (completed && delayed) ||
+    (ongoing && delayed)
+  ) {
+    console.log("Duplicate classification:", {
+      id: d.id,
+      target: d.target,
+      accomplishment: d.accomplishment,
+      completed,
+      ongoing,
+      delayed
+    });
+  }
+});
   return (
     
     
