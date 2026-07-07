@@ -428,9 +428,17 @@ const ongoingKPIs = filteredData.filter(d => {
   );
 }).length;
 
-const delayedKPIs = filteredData.filter(d => {
+/*const delayedKPIs = filteredData.filter(d => {
   return Number(d.accomplishment) === 0;
-}).length;
+}).length; */
+const delayedList = filteredData.filter(d => {
+  return Number(d.accomplishment) === 0;
+});
+
+console.log("Delayed records:", delayedList);
+
+const delayedKPIs = delayedList.length;
+
 
 console.log({
   total: totalKPIs,
