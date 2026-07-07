@@ -1354,7 +1354,7 @@ setFilterTimeline(""); }}>
           marginBottom: 4
         }}
       >
-        🇵🇭 TESDA Bukidnon Provincial Office
+        TESDA Bukidnon Provincial Office
       </div>
 
       <div style={{ fontSize: 12 }}>
