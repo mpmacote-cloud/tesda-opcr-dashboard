@@ -1318,96 +1318,122 @@ setFilterTimeline(""); }}>
         </div>
       )}
 
- {/* ===================== FOOTER ===================== */}
+{/* ===================== FOOTER ===================== */}
 <footer
   style={{
     marginTop: 40,
     background: "#0038A8",
     color: "#fff",
-    padding: "25px 20px",
-    borderTop: "5px solid #E30613",
-    textAlign: "center",
-    borderRadius: "10px 10px 0 0"
+    borderTop: "4px solid #E30613",
+    borderRadius: "10px 10px 0 0",
+    padding: "15px 20px 10px"
   }}
 >
+  {/* Top Section */}
   <div
     style={{
-      fontSize: 22,
-      fontWeight: "bold",
-      marginBottom: 8
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      flexWrap: "wrap",
+      gap: 20
     }}
   >
-    🇵🇭 TESDA Bukidnon Provincial Office
+    {/* Left */}
+    <div
+      style={{
+        flex: 1,
+        minWidth: "250px",
+        textAlign: "left"
+      }}
+    >
+      <div
+        style={{
+          fontSize: 15,
+          fontWeight: "bold",
+          marginBottom: 4
+        }}
+      >
+        🇵🇭 TESDA Bukidnon Provincial Office
+      </div>
+
+      <div style={{ fontSize: 12 }}>
+        Office Performance Commitment and Review (OPCR)
+      </div>
+
+      <div
+        style={{
+          fontSize: 11,
+          opacity: 0.9
+        }}
+      >
+        Executive Monitoring Dashboard
+      </div>
+    </div>
+
+    {/* Right */}
+    <div
+      style={{
+        flex: 1,
+        minWidth: "220px",
+        textAlign: "right"
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          opacity: 0.9
+        }}
+      >
+        Program and Developed by
+      </div>
+
+      <div
+        style={{
+          fontSize: 15,
+          fontWeight: "bold",
+          color: "#FFD54F",
+          margin: "3px 0"
+        }}
+      >
+        Mat Perater Macote
+      </div>
+
+      <div
+        style={{
+          fontSize: 11
+        }}
+      >
+        Technical Support Staff
+      </div>
+    </div>
   </div>
 
-  <div
-    style={{
-      fontSize: 16,
-      fontWeight: 500,
-      marginBottom: 5
-    }}
-  >
-    Office Performance Commitment and Review (OPCR)
-  </div>
-
-  <div
-    style={{
-      fontSize: 14,
-      opacity: 0.95,
-      marginBottom: 15
-    }}
-  >
-    Executive Monitoring Dashboard
-  </div>
-
+  {/* Divider */}
   <hr
     style={{
       border: "none",
-      borderTop: "1px solid rgba(255,255,255,.30)",
-      margin: "15px auto",
-      width: "90%"
+      borderTop: "1px solid rgba(255,255,255,.25)",
+      margin: "12px 0 8px"
     }}
   />
 
+  {/* Bottom */}
   <div
     style={{
-      fontSize: 14,
-      lineHeight: 1.8
+      textAlign: "center",
+      fontSize: 11,
+      lineHeight: 1.6,
+      opacity: 0.95
     }}
   >
-    <strong>Program and Developed by</strong>
-    <br />
-    <span
-      style={{
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "#FFD54F"
-      }}
-    >
-      Mat Perater Macote
-    </span>
-
-    <br />
-
-    Technical Support Staff
-
-    <br /><br />
-
     Version 1.0.0
-
     <br />
-
     © {new Date().getFullYear()} TESDA Bukidnon Provincial Office
-
     <br />
-
     All Rights Reserved
   </div>
 </footer>
-      
-    </div>
-  );
-}
 
 /* ===================== HELPERS ===================== */
 const ChartBox = ({ title, annotation, children }) => (
