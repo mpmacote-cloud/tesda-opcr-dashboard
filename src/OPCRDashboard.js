@@ -432,15 +432,21 @@ const ongoingKPIs = filteredData.filter(d => {
   return Number(d.accomplishment) === 0;
 }).length; */
 
-const delayedList = filteredData.filter(d => {
-  return Number(d.accomplishment) === 0;
-});
+const delayedList = filteredData.filter(d => Number(d.accomplishment) === 0);
 
 console.log("Delayed KPIs:", delayedList.length);
 
-// Show ONLY the IDs
-console.log(
-  delayedList.map(d => d.id).sort((a, b) => a - b)
+// Show records around the suspicious IDs
+console.table(
+  filteredData
+    .filter(d => d.id >= 40 && d.id <= 60)
+    .map(d => ({
+      id: d.id,
+      target: d.target,
+      accomplishment: d.accomplishment,
+      accomplishmentNumber: Number(d.accomplishment),
+      type: typeof d.accomplishment
+    }))
 );
 
 const delayedKPIs = delayedList.length;
