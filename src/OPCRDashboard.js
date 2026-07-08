@@ -546,6 +546,7 @@ return (
 
 >
   <option value="">All Operating Units</option>
+   <option value="RO X">RO X</option>
   <option value="PO BUKIDNON">PO BUKIDNON</option>
   <option value="PTC BUKIDNON">PTC BUKIDNON</option>
 </select>
@@ -1142,6 +1143,7 @@ setFilterTimeline(""); }}>
     }}
   >
     <option value="">Select Operating Unit</option>
+     <option value="RO X">RO X</option>
     <option value="PO BUKIDNON">PO BUKIDNON</option>
       <option value="PTC BUKIDNON">PTC BUKIDNON</option>
  
