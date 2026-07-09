@@ -133,37 +133,48 @@ router.delete("/:id", (req, res) => {
 
 /* ================= LOGIN ================= */
 
-router.post("/login", (req, res) => {
 
-  const { username, password } = req.body;
 
-  db.query(
-    "SELECT * FROM users WHERE username=? AND password=?",
-    [username, password],
-    (err, results) => {
+router.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
 
-      if (err) {
-        console.error(err);
-        return res.status(500).json({
-          success: false
-        });
-      }
+    const [results] = await db.query(
+      "SELECT id, username, password, role FROM users WHERE username = ?",
+      [username]
+    );
 
-      if (results.length === 0) {
-        return res.json({
-          success: false
-        });
-      }
-
-      res.json({
-        success: true,
-        role: results[0].role,
-        username: results[0].username
+    if (results.length === 0) {
+      return res.json({
+        success: false,
+        message: "Invalid username or password."
       });
-
     }
-  );
 
+    const user = results[0];
+
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.json({
+        success: false,
+        message: "Invalid username or password."
+      });
+    }
+
+    res.json({
+      success: true,
+      username: user.username,
+      role: user.role
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Server error."
+    });
+  }
 });
 
 module.exports = router;

@@ -1,5 +1,9 @@
-console.log("***** OPCR BACKEND STARTED *****");
-console.log("***** THIS IS MY OPCR SERVER *****");
+require("dotenv").config();
+console.log("======================================");
+console.log(" TESDA Bukidnon OPCR API");
+console.log(" Version 1.0.0");
+console.log(" Developed by Mat Perater Macote");
+console.log("======================================");
 const express = require("express");
 const cors = require("cors");
 const opcrRoutes = require("./routes/opcr");
