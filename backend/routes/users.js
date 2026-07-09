@@ -3,16 +3,25 @@ const router = express.Router();
 const db = require("../db");
 
 /* ================= GET ALL USERS ================= */
-
 router.get("/", (req, res) => {
 
   db.query(
-    "SELECT * FROM users ORDER BY id ASC",
+    `
+    SELECT
+      id,
+      username,
+      role
+    FROM users
+    ORDER BY id ASC
+    `,
     (err, results) => {
 
       if (err) {
         console.error(err);
-        return res.status(500).json(err);
+        return res.status(500).json({
+          success: false,
+          message: "Unable to retrieve users."
+        });
       }
 
       res.json(results);
