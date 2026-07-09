@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
@@ -33,31 +34,45 @@ router.get("/", (req, res) => {
 
 /* ================= CREATE USER ================= */
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
 
-  const {
-    username,
-    password,
-    role
-  } = req.body;
+  try {
 
-  db.query(
-    "INSERT INTO users (username,password,role) VALUES (?,?,?)",
-    [username, password, role],
-    (err, result) => {
+    const {
+      username,
+      password,
+      role
+    } = req.body;
 
-      if (err) {
-        console.error(err);
-        return res.status(500).json(err);
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    db.query(
+      "INSERT INTO users (username,password,role) VALUES (?,?,?)",
+      [username, hashedPassword, role],
+      (err, result) => {
+
+        if (err) {
+          console.error(err);
+          return res.status(500).json(err);
+        }
+
+        res.json({
+          success: true,
+          id: result.insertId
+        });
+
       }
+    );
 
-      res.json({
-        success: true,
-        id: result.insertId
-      });
+  } catch (err) {
 
-    }
-  );
+    console.error(err);
+
+    res.status(500).json({
+      success: false
+    });
+
+  }
 
 });
 
