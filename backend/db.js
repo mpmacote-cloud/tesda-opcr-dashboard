@@ -11,5 +11,4 @@ const db = mysql.createPool({
   }
 });
 
-
-module.exports = db.promise();
+module.exports = db;
