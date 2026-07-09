@@ -4,54 +4,26 @@ const db = require("../db");
 
 /* ================= GET ALL ================= */
 
-router.get("/", (req, res) => {
-  db.query(
-    "SELECT * FROM opcr_records ORDER BY year DESC",
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json(err);
-      }
+router.get("/", async (req, res) => {
+  try {
+    const [results] = await db.query(
+      "SELECT * FROM opcr_records ORDER BY year DESC"
+    );
 
-      res.json(results);
-    }
-  );
+    res.json(results);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
 });
-/*router.get("/", (req, res) => {
-  db.query(
-    "SELECT DATABASE() AS database_name, COUNT(*) AS total FROM opcr_records",
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json(err);
-      }
-
-      res.json(results);
-    }
-  );
-});*/
-
 
 /* ================= CREATE ================= */
 
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
+  try {
 
-  const {
-    year,
-    operatingUnit,
-    pap,
-    kpi,
-    target,
-    accomplishment,
-    timeline,
-    focalPerson
-  } = req.body;
-
-  db.query(
-    `INSERT INTO opcr_records
-    (year, operatingUnit, pap, kpi, target, accomplishment, timeline, focalPerson)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
+    const {
       year,
       operatingUnit,
       pap,
@@ -60,54 +32,43 @@ router.post("/", (req, res) => {
       accomplishment,
       timeline,
       focalPerson
-    ],
-    (err, result) => {
+    } = req.body;
 
-      if (err) {
-        console.error(err);
-        return res.status(500).json(err);
-      }
+    const [result] = await db.query(
+      `INSERT INTO opcr_records
+      (year, operatingUnit, pap, kpi, target, accomplishment, timeline, focalPerson)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        year,
+        operatingUnit,
+        pap,
+        kpi,
+        target,
+        accomplishment,
+        timeline,
+        focalPerson
+      ]
+    );
 
-      res.json({
-        success: true,
-        id: result.insertId
-      });
+    res.json({
+      success: true,
+      id: result.insertId
+    });
 
-    }
-  );
-
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
 });
 
 /* ================= UPDATE ================= */
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
+  try {
 
-  const id = req.params.id;
+    const id = req.params.id;
 
-  const {
-    year,
-    operatingUnit,
-    pap,
-    kpi,
-    target,
-    accomplishment,
-    timeline,
-    focalPerson
-  } = req.body;
-
-  db.query(
-    `UPDATE opcr_records
-     SET
-       year=?,
-       operatingUnit=?,
-       pap=?,
-       kpi=?,
-       target=?,
-       accomplishment=?,
-       timeline=?,
-       focalPerson=?
-     WHERE id=?`,
-    [
+    const {
       year,
       operatingUnit,
       pap,
@@ -115,46 +76,62 @@ router.put("/:id", (req, res) => {
       target,
       accomplishment,
       timeline,
-      focalPerson,
-      id
-    ],
-    (err) => {
+      focalPerson
+    } = req.body;
 
-      if (err) {
-        console.error(err);
-        return res.status(500).json(err);
-      }
+    await db.query(
+      `UPDATE opcr_records
+      SET
+        year=?,
+        operatingUnit=?,
+        pap=?,
+        kpi=?,
+        target=?,
+        accomplishment=?,
+        timeline=?,
+        focalPerson=?
+      WHERE id=?`,
+      [
+        year,
+        operatingUnit,
+        pap,
+        kpi,
+        target,
+        accomplishment,
+        timeline,
+        focalPerson,
+        id
+      ]
+    );
 
-      res.json({
-        success: true
-      });
+    res.json({
+      success: true
+    });
 
-    }
-  );
-
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
 });
 
 /* ================= DELETE ================= */
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
+  try {
 
-  db.query(
-    "DELETE FROM opcr_records WHERE id=?",
-    [req.params.id],
-    (err) => {
+    await db.query(
+      "DELETE FROM opcr_records WHERE id=?",
+      [req.params.id]
+    );
 
-      if (err) {
-        console.error(err);
-        return res.status(500).json(err);
-      }
+    res.json({
+      success: true
+    });
 
-      res.json({
-        success: true
-      });
-
-    }
-  );
-
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;
