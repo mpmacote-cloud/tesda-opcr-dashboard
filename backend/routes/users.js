@@ -135,7 +135,7 @@ router.delete("/:id", (req, res) => {
 
 
 
-router.post("/login", async (req, res) => {
+/* router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -154,6 +154,58 @@ router.post("/login", async (req, res) => {
     const user = results[0];
 
     const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.json({
+        success: false,
+        message: "Invalid username or password."
+      });
+    }
+
+    res.json({
+      success: true,
+      username: user.username,
+      role: user.role
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Server error."
+    });
+  }
+}); */
+
+router.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    console.log("LOGIN REQUEST:");
+    console.log("Username:", username);
+    console.log("Password entered:", password);
+
+    const [results] = await db.query(
+      "SELECT id, username, password, role FROM users WHERE username = ?",
+      [username]
+    );
+
+    console.log("User found:", results.length);
+
+    if (results.length === 0) {
+      return res.json({
+        success: false,
+        message: "Invalid username or password."
+      });
+    }
+
+    const user = results[0];
+
+    console.log("Stored hash:", user.password);
+
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    console.log("Password match:", validPassword);
 
     if (!validPassword) {
       return res.json({
