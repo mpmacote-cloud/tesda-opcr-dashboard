@@ -187,17 +187,16 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const user = results[0];
+   const user = results[0];
 
+const validPassword = await bcrypt.compare(password, user.password);
 
-    const validPassword = await bcrypt.compare(password, user.password);
-
-    if (!validPassword) {
-      return res.json({
-        success: false,
-        message: "Invalid username or password."
-      });
-    }
+if (!validPassword) {
+  return res.json({
+    success: false,
+    message: "Invalid username or password."
+  });
+}
 
   const token = jwt.sign(
   {
