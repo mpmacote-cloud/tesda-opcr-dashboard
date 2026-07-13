@@ -4,6 +4,8 @@ console.log(" TESDA Bukidnon OPCR API");
 console.log(" Version 1.0.0");
 console.log(" Developed by Mat Perater Macote");
 console.log("======================================");
+
+console.log("JWT Loaded:", !!process.env.JWT_SECRET);
 const express = require("express");
 const cors = require("cors");
 const opcrRoutes = require("./routes/opcr");
@@ -15,6 +17,7 @@ const app = express();
 app.use(
   cors({
     origin: [
+      "http://localhost:3000",
       "https://tesda-opcr-dashboard.vercel.app"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],

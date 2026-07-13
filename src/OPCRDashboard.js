@@ -1,3 +1,4 @@
+import API_URL from "./config";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import React, { useState, useEffect, useRef } from "react";
@@ -58,7 +59,7 @@ const [users, setUsers] = useState([]);
 
 
 const loadUsers = () => {
-  fetch("https://tesda-opcr-dashboard.onrender.com/api/users")
+  fetch(`${API_URL}/api/users`)
     .then(res => res.json())
     .then(data => {
 
@@ -79,7 +80,7 @@ const loadUsers = () => {
 
 // Load KPI records
 useEffect(() => {
-  fetch("https://tesda-opcr-dashboard.onrender.com/api/opcr")
+  fetch(`${API_URL}/api/opcr`)
     .then(res => res.json())
     .then(data => {
 
@@ -130,7 +131,7 @@ const handleSubmit = async (e) => {
 
   try {
     if (editId) {
-      await fetch(`https://tesda-opcr-dashboard.onrender.com/api/opcr/${editId}`, {
+      await fetch(`${API_URL}/api/opcr/${editId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -138,7 +139,7 @@ const handleSubmit = async (e) => {
         body: JSON.stringify(payload)
       });
     } else {
-      await fetch("https://tesda-opcr-dashboard.onrender.com/api/opcr", {
+      await fetch(`${API_URL}/api/opcr`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -148,7 +149,7 @@ const handleSubmit = async (e) => {
     }
 
     // Reload data from MySQL
-    const res = await fetch("https://tesda-opcr-dashboard.onrender.com/api/opcr");
+    const res = await fetch(`${API_URL}/api/opcr`);
     const data = await res.json();
     setOpcrData(data);
 
@@ -184,12 +185,12 @@ const handleDelete = async (id) => {
 
   try {
 
-    await fetch(`https://tesda-opcr-dashboard.onrender.com/api/opcr/${id}`, {
+    await fetch(`${API_URL}/api/opcr/${id}`, {
       method: "DELETE"
     });
 
     // Reload latest data from MySQL
-    const res = await fetch("https://tesda-opcr-dashboard.onrender.com/api/opcr");
+    const res = await fetch(`${API_URL}/api/opcr`);
     const data = await res.json();
 
     setOpcrData(data);
@@ -1196,7 +1197,7 @@ setFilterTimeline(""); }}>
       if (editUserIndex !== null) {
 
         await fetch(
-          `https://tesda-opcr-dashboard.onrender.com/api/users/${editUserData.id}`,
+          `${API_URL}/api/users/${editUserData.id}`,
           {
             method: "PUT",
             headers: {
@@ -1211,7 +1212,7 @@ setFilterTimeline(""); }}>
       } else {
 
         await fetch(
-          "https://tesda-opcr-dashboard.onrender.com/api/users",
+          `${API_URL}/api/users`,
           {
             method: "POST",
             headers: {
@@ -1296,7 +1297,7 @@ setFilterTimeline(""); }}>
               if (!window.confirm("Delete this user?")) return;
 
               await fetch(
-                `https://tesda-opcr-dashboard.onrender.com/api/users/${user.id}`,
+                `${API_URL}/api/users/${user.id}`,
                 {
                   method: "DELETE"
                 }
