@@ -4,38 +4,35 @@ const router = express.Router();
 const db = require("../db");
 
 /* ================= GET ALL USERS ================= */
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
+  try {
 
-  db.query(
-    `
-    SELECT
-      id,
-      username,
-      role
-    FROM users
-    ORDER BY id ASC
-    `,
-    (err, results) => {
+    const [results] = await db.query(`
+      SELECT
+        id,
+        username,
+        role
+      FROM users
+      ORDER BY id ASC
+    `);
 
-      if (err) {
-        console.error(err);
-        return res.status(500).json({
-          success: false,
-          message: "Unable to retrieve users."
-        });
-      }
+    res.json(results);
 
-      res.json(results);
+  } catch (err) {
 
-    }
-  );
+    console.error(err);
 
+    res.status(500).json({
+      success: false,
+      message: "Unable to retrieve users."
+    });
+
+  }
 });
 
 /* ================= CREATE USER ================= */
 
 router.post("/", async (req, res) => {
-
   try {
 
     const {
@@ -46,23 +43,15 @@ router.post("/", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    db.query(
+    const [result] = await db.query(
       "INSERT INTO users (username,password,role) VALUES (?,?,?)",
-      [username, hashedPassword, role],
-      (err, result) => {
-
-        if (err) {
-          console.error(err);
-          return res.status(500).json(err);
-        }
-
-        res.json({
-          success: true,
-          id: result.insertId
-        });
-
-      }
+      [username, hashedPassword, role]
     );
+
+    res.json({
+      success: true,
+      id: result.insertId
+    });
 
   } catch (err) {
 
@@ -73,62 +62,63 @@ router.post("/", async (req, res) => {
     });
 
   }
-
 });
 
 /* ================= UPDATE USER ================= */
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
+  try {
 
-  const { username, password, role } = req.body;
+    const { username, password, role } = req.body;
 
-  db.query(
-    `UPDATE users
-     SET username=?, password=?, role=?
-     WHERE id=?`,
-    [
-      username,
-      password,
-      role,
-      req.params.id
-    ],
-    (err) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      if (err) {
-        console.error(err);
-        return res.status(500).json(err);
-      }
+    await db.query(
+      `UPDATE users
+       SET username=?, password=?, role=?
+       WHERE id=?`,
+      [
+        username,
+        hashedPassword,
+        role,
+        req.params.id
+      ]
+    );
 
-      res.json({
-        success: true
-      });
+    res.json({
+      success: true
+    });
 
-    }
-  );
+  } catch (err) {
 
+    console.error(err);
+
+    res.status(500).json(err);
+
+  }
 });
 
 /* ================= DELETE USER ================= */
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
+  try {
 
-  db.query(
-    "DELETE FROM users WHERE id=?",
-    [req.params.id],
-    (err) => {
+    await db.query(
+      "DELETE FROM users WHERE id=?",
+      [req.params.id]
+    );
 
-      if (err) {
-        console.error(err);
-        return res.status(500).json(err);
-      }
+    res.json({
+      success: true
+    });
 
-      res.json({
-        success: true
-      });
+  } catch (err) {
 
-    }
-  );
+    console.error(err);
 
+    res.status(500).json(err);
+
+  }
 });
 
 /* ================= LOGIN ================= */
@@ -181,16 +171,13 @@ router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    console.log("LOGIN REQUEST:");
-    console.log("Username:", username);
-    console.log("Password entered:", password);
 
     const [results] = await db.query(
       "SELECT id, username, password, role FROM users WHERE username = ?",
       [username]
     );
 
-    console.log("User found:", results.length);
+  
 
     if (results.length === 0) {
       return res.json({
@@ -201,11 +188,8 @@ router.post("/login", async (req, res) => {
 
     const user = results[0];
 
-    console.log("Stored hash:", user.password);
 
     const validPassword = await bcrypt.compare(password, user.password);
-
-    console.log("Password match:", validPassword);
 
     if (!validPassword) {
       return res.json({
