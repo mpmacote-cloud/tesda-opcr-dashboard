@@ -2,6 +2,7 @@ import API_URL from "./config";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import React, { useState, useEffect, useRef } from "react";
+import { apiFetch } from "./api";
 
 import {
   BarChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -59,7 +60,7 @@ const [users, setUsers] = useState([]);
 
 
 const loadUsers = () => {
-  fetch(`${API_URL}/api/users`)
+  apiFetch("/api/users")
     .then(res => res.json())
     .then(data => {
 
@@ -80,7 +81,8 @@ const loadUsers = () => {
 
 // Load KPI records
 useEffect(() => {
-  fetch(`${API_URL}/api/opcr`)
+
+ apiFetch("/api/opcr")
     .then(res => res.json())
     .then(data => {
 
@@ -97,6 +99,7 @@ useEffect(() => {
       console.error("Failed to load data:", err);
       setOpcrData([]);
     });
+
 }, []);
 
 // Load users
@@ -131,15 +134,12 @@ const handleSubmit = async (e) => {
 
   try {
     if (editId) {
-      await fetch(`${API_URL}/api/opcr/${editId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+      await apiFetch(`/api/opcr/${editId}`, {
+  method: "PUT",
+  body: JSON.stringify(payload)
+});
     } else {
-      await fetch(`${API_URL}/api/opcr`, {
+      await apiFetch("/api/opcr", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -149,7 +149,7 @@ const handleSubmit = async (e) => {
     }
 
     // Reload data from MySQL
-    const res = await fetch(`${API_URL}/api/opcr`);
+    const res = await apiFetch("/api/opcr");
     const data = await res.json();
     setOpcrData(data);
 
@@ -185,12 +185,12 @@ const handleDelete = async (id) => {
 
   try {
 
-    await fetch(`${API_URL}/api/opcr/${id}`, {
-      method: "DELETE"
-    });
+   await apiFetch(`/api/opcr/${id}`, {
+  method: "DELETE"
+});
 
     // Reload latest data from MySQL
-    const res = await fetch(`${API_URL}/api/opcr`);
+    const res = await apiFetch("/api/opcr");
     const data = await res.json();
 
     setOpcrData(data);
@@ -1196,31 +1196,22 @@ setFilterTimeline(""); }}>
 
       if (editUserIndex !== null) {
 
-        await fetch(
-          `${API_URL}/api/users/${editUserData.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(editUserData)
-          }
-        );
+        await apiFetch(
+  `/api/users/${editUserData.id}`,
+  {
+    method: "PUT",
+    body: JSON.stringify(editUserData)
+  }
+);
 
         setEditUserIndex(null);
 
       } else {
 
-        await fetch(
-          `${API_URL}/api/users`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(newUser)
-          }
-        );
+      await apiFetch("/api/users", {
+  method: "POST",
+  body: JSON.stringify(newUser)
+});
 
         setNewUser({
           username: "",
@@ -1296,12 +1287,12 @@ setFilterTimeline(""); }}>
 
               if (!window.confirm("Delete this user?")) return;
 
-              await fetch(
-                `${API_URL}/api/users/${user.id}`,
-                {
-                  method: "DELETE"
-                }
-              );
+             await apiFetch(
+  `/api/users/${user.id}`,
+  {
+    method: "DELETE"
+  }
+);
 
               loadUsers();
 

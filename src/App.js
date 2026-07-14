@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import OPCRDashboard from "./OPCRDashboard";
 import Particles from "react-tsparticles";
 import "./App.css";
@@ -9,6 +9,20 @@ function App() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [showPrivacy, setShowPrivacy] = useState(true);
   const [activeTab, setActiveTab] = useState("opcr");
+  const [username, setUsername] = useState("");
+  
+  useEffect(() => {
+
+  const token = localStorage.getItem("token");
+  const savedRole = localStorage.getItem("role");
+  const savedUsername = localStorage.getItem("username");
+
+  if (token && savedRole) {
+    setRole(savedRole);
+    setUsername(savedUsername || "");
+  }
+
+}, []);
 
   const handleLogin = async (e) => {
   e.preventDefault();
@@ -25,14 +39,27 @@ function App() {
 
     const result = await response.json();
 
-    if (result.success) {
-      setRole(result.role);
-      setShowLogin(false);
-      setLoginData({
-        username: "",
-        password: "",
-      });
-    } else {
+   if (result.success) {
+
+  // Save JWT
+  localStorage.setItem("token", result.token);
+
+  // Save user information
+  localStorage.setItem("role", result.role);
+  localStorage.setItem("username", result.username);
+
+  setRole(result.role);
+  setUsername(result.username);
+
+  setShowLogin(false);
+
+  setLoginData({
+    username: "",
+    password: "",
+  });
+}
+    
+    else {
       alert("Invalid username or password!");
     }
   } catch (err) {
@@ -41,7 +68,16 @@ function App() {
   }
 };
 
-  const handleLogout = () => setRole(null);
+  const handleLogout = () => {
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  localStorage.removeItem("username");
+
+  setRole(null);
+  setUsername("");
+
+};
 
   // ---------- HOMEPAGE ----------
   if (!role) {
@@ -69,13 +105,12 @@ function App() {
           <h1>TESDA Bukidnon Monitoring System</h1>
 
           <div className="home-buttons">
-            <button onClick={() => setShowLogin(true)} className="home-btn">Admin Login</button>
-            <button onClick={() => setRole("guest")} className="home-btn">Continue as Guest</button>
+            <button onClick={() => setShowLogin(true)} className="home-btn">Login</button>
           </div>
 
           {showLogin && (
             <form onSubmit={handleLogin} className="login-form">
-              <h3>Admin Login</h3>
+              <h3>Login</h3>
               <input
                 type="text"
                 placeholder="Username"
@@ -156,12 +191,16 @@ function App() {
 
   </div>
 </div>
-          <span className="nav-user">User: <b>{role.toUpperCase()}</b></span>
+          <span className="nav-user">
+  👤 {username}
+</span>
           <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
-      </div>
+   </div>
 
-      <OPCRDashboard
+
+
+<OPCRDashboard
   role={role}
   activeTab={activeTab}
   setActiveTab={setActiveTab}

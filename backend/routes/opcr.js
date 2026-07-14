@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
+const authenticateToken = require("../middleware/auth");
+const requireAdmin = require("../middleware/admin");
 
 /* ================= GET ALL ================= */
 
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const [results] = await db.query(
       "SELECT * FROM opcr_records ORDER BY year DESC"
@@ -20,7 +22,7 @@ router.get("/", async (req, res) => {
 
 /* ================= CREATE ================= */
 
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, requireAdmin, async (req, res) => {
   try {
 
     const {
@@ -63,7 +65,7 @@ router.post("/", async (req, res) => {
 
 /* ================= UPDATE ================= */
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
 
     const id = req.params.id;
@@ -116,7 +118,7 @@ router.put("/:id", async (req, res) => {
 
 /* ================= DELETE ================= */
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
 
     await db.query(
