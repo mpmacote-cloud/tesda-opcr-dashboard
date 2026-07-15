@@ -9,17 +9,17 @@ function App() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [showPrivacy, setShowPrivacy] = useState(true);
   const [activeTab, setActiveTab] = useState("opcr");
-  const [username, setUsername] = useState("");
+  /*const [username, setUsername] = useState("");*/
   
   useEffect(() => {
 
   const token = localStorage.getItem("token");
   const savedRole = localStorage.getItem("role");
-  const savedUsername = localStorage.getItem("username");
+  /*const savedUsername = localStorage.getItem("username");*/
 
   if (token && savedRole) {
     setRole(savedRole);
-    setUsername(savedUsername || "");
+   /* setUsername(savedUsername || "");*/
   }
 
 }, []);
@@ -46,10 +46,10 @@ function App() {
 
   // Save user information
   localStorage.setItem("role", result.role);
-  localStorage.setItem("username", result.username);
+ /* localStorage.setItem("username", result.username);*/
 
   setRole(result.role);
-  setUsername(result.username);
+ /* setUsername(result.username);*/
 
   setShowLogin(false);
 
@@ -72,10 +72,10 @@ function App() {
 
   localStorage.removeItem("token");
   localStorage.removeItem("role");
-  localStorage.removeItem("username");
+  /*localStorage.removeItem("username");*/
 
   setRole(null);
-  setUsername("");
+ /* setUsername("");*/
 
 };
 
