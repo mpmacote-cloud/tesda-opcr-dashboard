@@ -556,7 +556,7 @@ return (
   onChange={e => setFilterPap(e.target.value)}
   style={filterStyle}
 >
-  <option value="">All PAP</option>
+  <option value="">All PAPs</option>
 
   {[...new Set(opcrData.map(d => d.pap))].map(p => (
     <option
@@ -575,7 +575,7 @@ return (
   style={filterStyle}
 
 >
-  <option value="">All KPI</option>
+  <option value="">All KPIs</option>
   {[...new Set(opcrData.map(d => d.kpi))].map(k => (
     <option key={k} value={k} title={k}>
       {k}
