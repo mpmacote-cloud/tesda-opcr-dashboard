@@ -4,6 +4,7 @@ import Particles from "react-tsparticles";
 import "./App.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 
 function App() {
@@ -244,5 +245,5 @@ function App() {
     </div>
   );
 }
-import { toast } from "react-toastify";
+
 export default App;
