@@ -191,23 +191,17 @@ function App() {
 
   </div>
 </div>
-   <div className="user-menu">
+  <div className="user-menu">
 
   <div className="user-button">
 
     👤
 
-    <div className="user-info">
-
-      <strong>
-        {role === "admin"
-          ? "Administrator"
-          : "Guest User"}
-      </strong>
-
-      <small>{username}</small>
-
-    </div>
+    <span>
+      {role === "admin"
+        ? "Administrator"
+        : "Guest User"}
+    </span>
 
     ▼
 

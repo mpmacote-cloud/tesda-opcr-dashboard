@@ -351,43 +351,25 @@
     position:relative;
 }
 
-.user-button{
+.user-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
-    display:flex;
-    align-items:center;
-    gap:10px;
+    cursor: pointer;
 
-    cursor:pointer;
+    padding: 8px 14px;
 
-    padding:8px 14px;
+    border-radius: 8px;
 
-    border-radius:8px;
+    transition: .25s;
 
-    transition:.25s;
-
+    color: white;
+    font-weight: 600;
 }
 
-.user-button:hover{
-
-    background:#002f80;
-
-}
-
-.user-info{
-
-    display:flex;
-    flex-direction:column;
-
-    line-height:1.2;
-
-}
-
-.user-info small{
-
-    color:#ddd;
-
-    font-size:12px;
-
+.user-button:hover {
+    background: #002f80;
 }
 
 .user-dropdown{
