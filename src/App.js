@@ -191,10 +191,40 @@ function App() {
 
   </div>
 </div>
-          <span className="nav-user">
-  👤 {username}
-</span>
-          <button onClick={handleLogout} className="logout-btn">Logout</button>
+   <div className="user-menu">
+
+  <div className="user-button">
+
+    👤
+
+    <div className="user-info">
+
+      <strong>
+        {role === "admin"
+          ? "Administrator"
+          : "Guest User"}
+      </strong>
+
+      <small>{username}</small>
+
+    </div>
+
+    ▼
+
+  </div>
+
+  <div className="user-dropdown">
+
+    <div
+      className="logout-item"
+      onClick={handleLogout}
+    >
+      Logout
+    </div>
+
+  </div>
+
+</div>
         </div>
    </div>
 
