@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import OPCRDashboard from "./OPCRDashboard";
 import Particles from "react-tsparticles";
 import "./App.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 function App() {
   const [role, setRole] = useState(null);
@@ -52,6 +55,7 @@ function App() {
  /* setUsername(result.username);*/
 
   setShowLogin(false);
+  toast.success("Welcome to TESDA Bukidnon Monitoring System!");
 
   setLoginData({
     username: "",
@@ -229,8 +233,16 @@ function App() {
   activeTab={activeTab}
   setActiveTab={setActiveTab}
 />
+<ToastContainer
+  position="top-right"
+  autoClose={3000}
+  hideProgressBar={false}
+  newestOnTop
+  closeOnClick
+  pauseOnHover
+/>
     </div>
   );
 }
-
+import { toast } from "react-toastify";
 export default App;
