@@ -42,7 +42,7 @@ const isSystemAdmin = role === "system_admin";
 
 const isAdministrator = role === "administrator";
 
-const isUser = role === "user";
+
 
   const handleLogin = async (e) => {
   e.preventDefault();
