@@ -13,7 +13,13 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 
-function OPCRDashboard({ role, activeTab, setActiveTab }) {
+function OPCRDashboard({
+    role,
+    operatingUnit,
+    focalship,
+    activeTab,
+    setActiveTab
+}) {
   const chartRef = useRef(null);
   const kpiInputRef = useRef(null);
   const PIE_COLORS = ["#4caf50", "#e0e0e0"];
@@ -53,9 +59,23 @@ function OPCRDashboard({ role, activeTab, setActiveTab }) {
   /* ===================== USERS ===================== */
 const [users, setUsers] = useState([]);
 
-  const [newUser, setNewUser] = useState({ username: "", password: "", role: "guest" });
+const [newUser, setNewUser] = useState({
+  username: "",
+  password: "",
+  role: "users",
+  operatingUnit: "",
+  focalship: ""
+});
+
   const [editUserIndex, setEditUserIndex] = useState(null);
-  const [editUserData, setEditUserData] = useState({ username: "", password: "", role: "guest" });
+  const [editUserData, setEditUserData] = useState({
+  id: "",
+  username: "",
+  password: "",
+  role: "users",
+  operatingUnit: "",
+  focalship: ""
+});
 
 
 const loadUsers = () => {
@@ -1063,7 +1083,7 @@ setFilterTimeline(""); }}>
               <thead>
                 <tr>
                   <th>Year</th><th>Operating Unit</th><th>PAP</th><th>KPI</th><th>Target</th><th>Accomplishment</th><th>Rating %</th><th>Timeline</th><th>Focal</th>
-                  {role === "admin" && <th>Action</th>}
+                  {role === "system_admin" && <th>Action</th>}
                 </tr>
               </thead>
               <tbody>
@@ -1091,7 +1111,7 @@ setFilterTimeline(""); }}>
                     </td>
                     <td>{d.timeline}</td>
                     <td>{d.focalPerson}</td>
-                    {role === "admin" && (
+                    {role === "system_admin" && (
                       <td>
                         <button onClick={() => handleEdit(d.id)}>Edit</button>
                         <button onClick={() => handleDelete(d.id)}>Delete</button>
@@ -1104,7 +1124,7 @@ setFilterTimeline(""); }}>
           </div>
 
           {/* KPI FORM */}
-          {role === "admin" && (
+          {role === "system_admin" && (
             <div style={box}>
               <h3>{editId ? "Edit KPI" : "Add KPI"}</h3>
               <form onSubmit={handleSubmit} style={form}>
@@ -1184,7 +1204,8 @@ setFilterTimeline(""); }}>
       )}
 
       {/* USERS */}
-      {activeTab === "users" && role === "admin" && (
+      {activeTab === "users" &&
+ (role === "system_admin" || role === "administrator") && (
         <div style={box}>
           <h3>User Management</h3>
        <form
@@ -1213,10 +1234,20 @@ setFilterTimeline(""); }}>
 });
 
         setNewUser({
-          username: "",
-          password: "",
-          role: "guest"
-        });
+    username: "",
+    password: "",
+    role:
+        role === "system_admin"
+            ? "administrator"
+            : "user",
+
+    operatingUnit:
+        role === "system_admin"
+            ? ""
+            : operatingUnit,
+
+    focalship: ""
+});
 
       }
 
@@ -1228,16 +1259,116 @@ setFilterTimeline(""); }}>
     }
   }}
 >
-            <input placeholder="Username" value={editUserIndex !== null ? editUserData.username : newUser.username}
-              onChange={e => editUserIndex !== null ? setEditUserData({ ...editUserData, username: e.target.value }) : setNewUser({ ...newUser, username: e.target.value })} />
-            <input placeholder="Password" value={editUserIndex !== null ? editUserData.password : newUser.password}
-              onChange={e => editUserIndex !== null ? setEditUserData({ ...editUserData, password: e.target.value }) : setNewUser({ ...newUser, password: e.target.value })} />
-            <select value={editUserIndex !== null ? editUserData.role : newUser.role}
-              onChange={e => editUserIndex !== null ? setEditUserData({ ...editUserData, role: e.target.value }) : setNewUser({ ...newUser, role: e.target.value })}>
-              <option value="admin">Admin</option>
-              <option value="guest">Guest</option>
-            </select>
-            <button style={btn}>{editUserIndex !== null ? "Update" : "Add"} User</button>
+  <input
+  placeholder="Username"
+  value={editUserIndex !== null ? editUserData.username : newUser.username}
+  onChange={e =>
+    editUserIndex !== null
+      ? setEditUserData({ ...editUserData, username: e.target.value })
+      : setNewUser({ ...newUser, username: e.target.value })
+  }
+/>
+
+<input
+  placeholder="Password"
+  value={editUserIndex !== null ? editUserData.password : newUser.password}
+  onChange={e =>
+    editUserIndex !== null
+      ? setEditUserData({ ...editUserData, password: e.target.value })
+      : setNewUser({ ...newUser, password: e.target.value })
+  }
+/>
+
+<select
+  value={
+    editUserIndex !== null
+      ? editUserData.role
+      : newUser.role
+  }
+  onChange={e =>
+    editUserIndex !== null
+      ? setEditUserData({
+          ...editUserData,
+          role: e.target.value
+        })
+      : setNewUser({
+          ...newUser,
+          role: e.target.value
+        })
+  }
+>
+
+{role === "system_admin" ? (
+<>
+    <option value="system_admin">System Administrator</option>
+    <option value="administrator">Administrator</option>
+    <option value="user">User</option>
+</>
+) : (
+<>
+    <option value="user">User</option>
+</>
+)}
+
+</select>
+
+{role === "system_admin" ? (
+
+<select
+    value={editUserIndex !== null ? editUserData.operatingUnit : newUser.operatingUnit}
+    onChange={e =>
+        editUserIndex !== null
+            ? setEditUserData({
+                  ...editUserData,
+                  operatingUnit: e.target.value
+              })
+            : setNewUser({
+                  ...newUser,
+                  operatingUnit: e.target.value
+              })
+    }
+>
+    <option value="">Select Operating Unit</option>
+    <option value="PO BUKIDNON">PO BUKIDNON</option>
+    <option value="PTC BUKIDNON">PTC BUKIDNON</option>
+</select>
+
+) : (
+
+<input
+    value={operatingUnit}
+    readOnly
+/>
+
+)}
+
+<select
+  value={
+    editUserIndex !== null
+      ? editUserData.focalship
+      : newUser.focalship
+  }
+  onChange={e =>
+    editUserIndex !== null
+      ? setEditUserData({
+          ...editUserData,
+          focalship: e.target.value
+        })
+      : setNewUser({
+          ...newUser,
+          focalship: e.target.value
+        })
+  }
+>
+  <option value="">Select Focalship</option>
+  <option value="JCDD">JCDD</option>
+  <option value="APB">APB</option>
+  <option value="HCC">HCC</option>
+</select>
+
+<button style={btn}>
+  {editUserIndex !== null ? "Update" : "Add"} User
+</button>          
           </form>
 
 <hr style={{ margin: "20px 0" }} />

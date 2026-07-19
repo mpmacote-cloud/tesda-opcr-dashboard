@@ -7,26 +7,42 @@ import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 
 
+
 function App() {
   const [role, setRole] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [showPrivacy, setShowPrivacy] = useState(true);
   const [activeTab, setActiveTab] = useState("opcr");
-  /*const [username, setUsername] = useState("");*/
+  const [operatingUnit, setOperatingUnit] = useState("");
+const [focalship, setFocalship] = useState("");
+const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+ 
   
   useEffect(() => {
 
   const token = localStorage.getItem("token");
   const savedRole = localStorage.getItem("role");
-  /*const savedUsername = localStorage.getItem("username");*/
+  const savedOperatingUnit = localStorage.getItem("operatingUnit");
+  const savedFocalship = localStorage.getItem("focalship");
 
   if (token && savedRole) {
+
     setRole(savedRole);
-   /* setUsername(savedUsername || "");*/
+
+    setOperatingUnit(savedOperatingUnit || "");
+
+    setFocalship(savedFocalship || "");
+
   }
 
 }, []);
+
+const isSystemAdmin = role === "system_admin";
+
+const isAdministrator = role === "administrator";
+
+const isUser = role === "user";
 
   const handleLogin = async (e) => {
   e.preventDefault();
@@ -45,41 +61,45 @@ function App() {
 
    if (result.success) {
 
-  // Save JWT
-  localStorage.setItem("token", result.token);
+ localStorage.setItem("token", result.token);
+localStorage.setItem("role", result.role);
+localStorage.setItem("username", result.username);
+localStorage.setItem("operatingUnit", result.operatingUnit);
+localStorage.setItem("focalship", result.focalship);
 
-  // Save user information
-  localStorage.setItem("role", result.role);
- /* localStorage.setItem("username", result.username);*/
+setRole(result.role);
+setOperatingUnit(result.operatingUnit || "");
+setFocalship(result.focalship || "");
 
-  setRole(result.role);
- /* setUsername(result.username);*/
+setShowLogin(false);
 
-  setShowLogin(false);
-  toast.success("Welcome to TESDA Bukidnon Monitoring System!");
-
-  setLoginData({
-    username: "",
-    password: "",
-  });
+setLoginData({
+  username: "",
+  password: "",
+});
 }
     
     else {
-      alert("Invalid username or password!");
+      toast.error("Invalid username or password!");
     }
   } catch (err) {
     console.error(err);
-    alert("Cannot connect to the server.");
+    toast.error("Cannot connect to the server.");
   }
 };
 
   const handleLogout = () => {
 
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
-  /*localStorage.removeItem("username");*/
+localStorage.removeItem("token");
+localStorage.removeItem("role");
+localStorage.removeItem("username");
+localStorage.removeItem("operatingUnit");
+localStorage.removeItem("focalship");
+
 
   setRole(null);
+  setOperatingUnit("");
+  setFocalship("");
  /* setUsername("");*/
 
 };
@@ -174,66 +194,99 @@ function App() {
           <h3>TESDA Bukidnon</h3>
         </div>
         <div className="nav-right">
-          <div className="nav-item" onClick={() => window.location.reload()}>Home</div>
-          <div className="nav-item">About Us</div>
-        <div className="dropdown nav-item">
-  Monitoring System
-  <div className="dropdown-content">
 
-    <div onClick={() => setActiveTab("opcr")}>
-      OPCR Dashboard
-    </div>
-
-    {role === "admin" && (
-      <div onClick={() => setActiveTab("users")}>
-        User Management
-      </div>
-    )}
-
-    <div>
-      Bukidnon TVET Situationer
-    </div>
-
-  </div>
-</div>
-  <div className="user-menu">
-
-  <div className="user-button">
-
-    👤
-
-    <span>
-      {role === "admin"
-        ? "Administrator"
-        : "Guest User"}
-    </span>
-
-    ▼
-
-  </div>
-
-  <div className="user-dropdown">
+  {/* Desktop Menu */}
+  <div className="desktop-menu">
 
     <div
-      className="logout-item"
-      onClick={handleLogout}
+      className="nav-item"
+      onClick={() => window.location.reload()}
     >
-      Logout
+      Home
+    </div>
+
+    <div className="nav-item">
+      About Us
+    </div>
+
+    <div className="dropdown nav-item">
+      Monitoring System
+
+      <div className="dropdown-content">
+
+        <div onClick={() => setActiveTab("opcr")}>
+          OPCR Dashboard
+        </div>
+
+        {(isSystemAdmin || isAdministrator) && (
+          <div onClick={() => setActiveTab("users")}>
+            User Management
+          </div>
+        )}
+
+        <div>
+          Bukidnon TVET Situationer
+        </div>
+
+      </div>
+    </div>
+
+    <div className="user-menu">
+
+      <div className="user-button">
+
+        👤
+
+        <span>
+          {
+            isSystemAdmin
+              ? "System Administrator"
+              : isAdministrator
+              ? "Administrator"
+              : "User"
+          }
+        </span>
+
+        ▼
+
+      </div>
+
+      <div className="user-dropdown">
+
+        <div
+          className="logout-item"
+          onClick={handleLogout}
+        >
+          Logout
+        </div>
+
+      </div>
+
     </div>
 
   </div>
 
+  {/* Mobile Hamburger */}
+  <button
+    className="hamburger"
+    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+  >
+    ☰
+  </button>
+
 </div>
-        </div>
    </div>
 
 
 
 <OPCRDashboard
-  role={role}
-  activeTab={activeTab}
-  setActiveTab={setActiveTab}
+    role={role}
+    operatingUnit={operatingUnit}
+    focalship={focalship}
+    activeTab={activeTab}
+    setActiveTab={setActiveTab}
 />
+
 <ToastContainer
   position="top-right"
   autoClose={3000}

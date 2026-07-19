@@ -4,17 +4,24 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 const authenticateToken = require("../middleware/auth");
-const requireAdmin = require("../middleware/admin");
+const authorize = require("../middleware/authorize");
 
 /* ================= GET ALL USERS ================= */
-router.get("/", authenticateToken, requireAdmin, async (req, res) => {
+router.get(
+  "/",
+  authenticateToken,
+  authorize("system_admin", "administrator"),
+  async (req, res) => {
+
   try {
 
     const [results] = await db.query(`
       SELECT
         id,
         username,
-        role
+        role,
+        operatingUnit,
+      focalship
       FROM users
       ORDER BY id ASC
     `);
@@ -35,41 +42,77 @@ router.get("/", authenticateToken, requireAdmin, async (req, res) => {
 
 /* ================= CREATE USER ================= */
 
-router.post("/", authenticateToken, requireAdmin, async (req, res) => {
-  try {
+router.post(
+  "/",
+  authenticateToken,
+  authorize("system_admin", "administrator"),
+  async (req, res) => {
+    try {
+      const {
+        username,
+        password,
+        role,
+        operatingUnit,
+        focalship
+      } = req.body;
 
-    const {
-      username,
-      password,
-      role
-    } = req.body;
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const [result] = await db.query(
-      "INSERT INTO users (username,password,role) VALUES (?,?,?)",
-      [username, hashedPassword, role]
-    );
-
-    res.json({
-      success: true,
-      id: result.insertId
+// Administrator can only create Users
+if (
+    req.user.role === "administrator" &&
+    role !== "user"
+) {
+    return res.status(403).json({
+        success: false,
+        message: "Administrators can only create User accounts."
     });
+}
 
-  } catch (err) {
+let assignedOperatingUnit = operatingUnit;
 
-    console.error(err);
+// Administrator cannot choose another operating unit
+if (req.user.role === "administrator") {
+    assignedOperatingUnit = req.user.operatingUnit;
+}
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    res.status(500).json({
-      success: false
-    });
+      const [result] = await db.query(
+        `INSERT INTO users
+        (username, password, role, OperatingUnit, focalship)
+        VALUES (?, ?, ?, ?, ?)`,
+        [
+          username,
+          hashedPassword,
+          role,
+          assignedOperatingUnit,
+          focalship || null
+        ]
+      );
 
+      res.json({
+        success: true,
+        id: result.insertId
+      });
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.status(500).json({
+        success: false,
+        message: "Unable to create user."
+      });
+
+    }
   }
-});
+);
 
 /* ================= UPDATE USER ================= */
 
-router.put("/:id", authenticateToken, requireAdmin, async (req, res) => {
+router.put(
+  "/:id",
+  authenticateToken,
+  authorize("system_admin"),
+  async (req, res) => {
   try {
 
     const { username, password, role } = req.body;
@@ -103,7 +146,11 @@ router.put("/:id", authenticateToken, requireAdmin, async (req, res) => {
 
 /* ================= DELETE USER ================= */
 
-router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
+router.delete(
+  "/:id",
+  authenticateToken,
+  authorize("system_admin"),
+  async (req, res) => {
   try {
 
     await db.query(
@@ -175,10 +222,18 @@ router.post("/login", async (req, res) => {
     const { username, password } = req.body;
 
 
-    const [results] = await db.query(
-      "SELECT id, username, password, role FROM users WHERE username = ?",
-      [username]
-    );
+   const [results] = await db.query(
+  `SELECT
+      id,
+      username,
+      password,
+      role,
+      operatingUnit,
+      focalship
+   FROM users
+   WHERE username = ?`,
+  [username]
+);
 
   
 
@@ -200,22 +255,26 @@ if (!validPassword) {
   });
 }
 
-  const token = jwt.sign(
-  {
-    id: user.id,
-    username: user.username,
-    role: user.role
-  },
-  process.env.JWT_SECRET,
-  {
-    expiresIn: "8h"
-  }
+ const token = jwt.sign(
+{
+  id: user.id,
+  username: user.username,
+  role: user.role,
+  operatingUnit: user.operatingUnit,
+  focalship: user.focalship
+},
+process.env.JWT_SECRET,
+{
+  expiresIn: "8h"
+}
 );
 
 res.json({
   success: true,
   username: user.username,
   role: user.role,
+  operatingUnit: user.operatingUnit,
+  focalship: user.focalship,
   token
 });
 
