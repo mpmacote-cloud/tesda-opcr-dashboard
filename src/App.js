@@ -277,6 +277,57 @@ localStorage.removeItem("focalship");
 </div>
    </div>
 
+{mobileMenuOpen && (
+  <div className="mobile-menu">
+
+    <div
+      className="mobile-item"
+      onClick={() => {
+        window.location.reload();
+        setMobileMenuOpen(false);
+      }}
+    >
+      🏠 Home
+    </div>
+
+    <div
+      className="mobile-item"
+      onClick={() => {
+        setActiveTab("opcr");
+        setMobileMenuOpen(false);
+      }}
+    >
+      📊 OPCR Dashboard
+    </div>
+
+    {(isSystemAdmin || isAdministrator) && (
+      <div
+        className="mobile-item"
+        onClick={() => {
+          setActiveTab("users");
+          setMobileMenuOpen(false);
+        }}
+      >
+        👥 User Management
+      </div>
+    )}
+
+    <div className="mobile-item">
+      📈 Bukidnon TVET Situationer
+    </div>
+
+    <div
+      className="mobile-item"
+      onClick={() => {
+        handleLogout();
+        setMobileMenuOpen(false);
+      }}
+    >
+      🚪 Logout
+    </div>
+
+  </div>
+)}
 
 
 <OPCRDashboard
