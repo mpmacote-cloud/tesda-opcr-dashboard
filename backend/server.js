@@ -6,12 +6,12 @@ console.log(" Developed by Mat Perater Macote");
 console.log("======================================");
 
 console.log("JWT Loaded:", !!process.env.JWT_SECRET);
+
 const express = require("express");
 const cors = require("cors");
 const opcrRoutes = require("./routes/opcr");
-
 const userRoutes = require("./routes/users");
-
+const masterDataRoutes = require("./routes/masterData");
 const app = express();
 
 app.use(
@@ -28,6 +28,7 @@ app.use(express.json());
 
 app.use("/api/opcr", opcrRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/master", masterDataRoutes);
 
 app.get("/", (req, res) => {
   res.send("TESDA OPCR API Running");

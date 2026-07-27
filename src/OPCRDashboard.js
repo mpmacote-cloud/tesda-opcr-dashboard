@@ -20,6 +20,22 @@ function OPCRDashboard({
     activeTab,
     setActiveTab
 }) {
+
+  const focalshipsoptions = {
+    "PO BUKIDNON": [
+        "JCDD",
+        "APB",
+        "HCC",
+        "JBJ",
+        "DAC"
+    ],
+
+    "PTC BUKIDNON": [
+        "DAC",
+        "Faith"
+    ]
+};
+console.log("Logged in Operating Unit:", operatingUnit);
   const chartRef = useRef(null);
   const kpiInputRef = useRef(null);
   const PIE_COLORS = ["#4caf50", "#e0e0e0"];
@@ -59,10 +75,13 @@ function OPCRDashboard({
   /* ===================== USERS ===================== */
 const [users, setUsers] = useState([]);
 
+const [operatingUnits, setOperatingUnits] = useState([]);
+
+const [focalships, setFocalships] = useState([]);
 const [newUser, setNewUser] = useState({
   username: "",
   password: "",
-  role: "users",
+  role: "user",
   operatingUnit: "",
   focalship: ""
 });
@@ -72,7 +91,7 @@ const [newUser, setNewUser] = useState({
   id: "",
   username: "",
   password: "",
-  role: "users",
+  role: "user",
   operatingUnit: "",
   focalship: ""
 });
@@ -98,33 +117,68 @@ const loadUsers = () => {
     });
 };
 
-// Load KPI records
+// ===================== INITIAL LOAD =====================
 useEffect(() => {
 
- apiFetch("/api/opcr")
-    .then(res => res.json())
-    .then(data => {
+    const initialize = async () => {
 
-      if (Array.isArray(data)) {
-        console.log("Loaded from MySQL:", data.length);
-        setOpcrData(data);
-      } else {
-        console.warn("Invalid API response:", data);
-        setOpcrData([]);
-      }
+        try {
 
-    })
-    .catch(err => {
-      console.error("Failed to load data:", err);
-      setOpcrData([]);
-    });
+            // Load OPCR records
+            const res = await apiFetch("/api/opcr");
+            const data = await res.json();
+
+            if (Array.isArray(data)) {
+                console.log("Loaded OPCR:", data.length);
+                setOpcrData(data);
+            } else {
+                setOpcrData([]);
+            }
+
+            // Load users
+            await loadUsers();
+
+            // Load Operating Units
+            await loadOperatingUnits();
+
+            // Load Focalships
+            await loadFocalships();
+
+        } catch (err) {
+
+            console.error(err);
+
+        }
+
+    };
+
+    initialize();
 
 }, []);
 
-// Load users
-useEffect(() => {
-  loadUsers();
-}, []);
+const loadOperatingUnits = async () => {
+  try {
+    const res = await apiFetch("/api/master/operating-units");
+    const data = await res.json();
+
+    setOperatingUnits(data);
+
+  } catch (err) {
+    console.error("Unable to load Operating Units", err);
+  }
+};
+
+const loadFocalships = async () => {
+  try {
+    const res = await apiFetch("/api/master/focalships");
+    const data = await res.json();
+
+    setFocalships(data);
+
+  } catch (err) {
+    console.error("Unable to load Focalships", err);
+  }
+};
 
   useEffect(() => localStorage.setItem("opcrData", JSON.stringify(opcrData)), [opcrData]);
  
@@ -1162,9 +1216,16 @@ setFilterTimeline(""); }}>
       fontSize: 14
     }}
   >
-    <option value="">Select Operating Unit</option>
-    <option value="PO BUKIDNON">PO BUKIDNON</option>
-      <option value="PTC BUKIDNON">PTC BUKIDNON</option>
+  <option value="">Select Operating Unit</option>
+
+{operatingUnits.map(unit => (
+    <option
+        key={unit.id}
+        value={unit.name}
+    >
+        {unit.name}
+    </option>
+))}
      
  
   </select>
@@ -1228,9 +1289,17 @@ setFilterTimeline(""); }}>
 
       } else {
 
-      await apiFetch("/api/users", {
+      const userToSave =
+  role === "administrator"
+    ? {
+        ...newUser,
+        role: "user"
+      }
+    : newUser;
+
+await apiFetch("/api/users", {
   method: "POST",
-  body: JSON.stringify(newUser)
+  body: JSON.stringify(userToSave)
 });
 
         setNewUser({
@@ -1322,15 +1391,23 @@ setFilterTimeline(""); }}>
                   ...editUserData,
                   operatingUnit: e.target.value
               })
+              
             : setNewUser({
                   ...newUser,
                   operatingUnit: e.target.value
               })
     }
 >
-    <option value="">Select Operating Unit</option>
-    <option value="PO BUKIDNON">PO BUKIDNON</option>
-    <option value="PTC BUKIDNON">PTC BUKIDNON</option>
+   <option value="">Select Operating Unit</option>
+
+{operatingUnits.map(unit => (
+    <option
+        key={unit.id}
+        value={unit.name}
+    >
+        {unit.name}
+    </option>
+))}
 </select>
 
 ) : (
@@ -1360,10 +1437,28 @@ setFilterTimeline(""); }}>
         })
   }
 >
-  <option value="">Select Focalship</option>
-  <option value="JCDD">JCDD</option>
-  <option value="APB">APB</option>
-  <option value="HCC">HCC</option>
+<option value="">Select Focalship</option>
+
+{focalships
+    .filter(focal =>
+        focal.operatingUnit === (
+            editUserIndex !== null
+                ? editUserData.operatingUnit
+                : (
+                    role === "system_admin"
+                        ? newUser.operatingUnit
+                        : operatingUnit
+                )
+        )
+    )
+    .map(focal => (
+        <option
+            key={focal.id}
+            value={focal.name}
+        >
+            {focal.name}
+        </option>
+))}
 </select>
 
 <button style={btn}>
@@ -1373,74 +1468,121 @@ setFilterTimeline(""); }}>
 
 <hr style={{ margin: "20px 0" }} />
 
-<table
-  style={{
-    width: "100%",
-    borderCollapse: "collapse"
-  }}
->
+<table className="admin-table">
+  
   <thead>
     <tr style={{ background: "#1976d2", color: "white" }}>
       <th>ID</th>
-      <th>Username</th>
-      <th>Role</th>
-      <th>Actions</th>
+    <th>Username</th>
+    <th>Role</th>
+    <th>Operating Unit</th>
+    <th>Focalship</th>
+    <th>Status</th>
+    <th>Actions</th>
     </tr>
   </thead>
 
-  <tbody>
-    {users.map(user => (
-      <tr key={user.id}>
-        <td>{user.id}</td>
-        <td>{user.username}</td>
-        <td>{user.role}</td>
+ <tbody>
+  {users.map(user => (
+    <tr key={user.id}>
+      <td>{user.id}</td>
+      <td>{user.username}</td>
+      <td>{user.role}</td>
+      <td>{user.operatingUnit}</td>
+      <td>{user.focalship}</td>
+      <td>{user.status}</td>
 
-        <td>
+      <td>
+        <button
+          style={btn}
+          onClick={() => {
+            setEditUserIndex(user.id);
+            setEditUserData(user);
+          }}
+        >
+          Edit
+        </button>
 
-          <button
-            style={btn}
-            onClick={() => {
-              setEditUserIndex(user.id);
-              setEditUserData(user);
-            }}
-          >
-            Edit
-          </button>
+        <button
+          style={{
+            ...btn,
+            background: "#d32f2f",
+            marginLeft: 8
+          }}
+          onClick={async () => {
+            if (!window.confirm("Delete this user?")) return;
 
-          <button
-            style={{
-              ...btn,
-              background: "#d32f2f",
-              marginLeft: 8
-            }}
-            onClick={async () => {
+            await apiFetch(`/api/users/${user.id}`, {
+              method: "DELETE"
+            });
 
-              if (!window.confirm("Delete this user?")) return;
-
-             await apiFetch(
-  `/api/users/${user.id}`,
-  {
-    method: "DELETE"
-  }
-);
-
-              loadUsers();
-
-            }}
-          >
-            Delete
-          </button>
-
-        </td>
-
-      </tr>
-    ))}
-  </tbody>
+            loadUsers();
+          }}
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
 
 </table>
 
         </div>
       )}
+
+      {/* ===================== OPERATING UNITS ===================== */}
+
+{activeTab === "operatingUnits" && role === "system_admin" && (
+
+<div style={box}>
+
+    <h2>Operating Unit Management</h2>
+
+    <p>Manage all TESDA Operating Units here.</p>
+
+    <table
+        style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: 20
+        }}
+    >
+
+       <thead>
+    <tr
+        style={{
+            background: "#1976d2",
+            color: "white"
+        }}
+    >
+        <th style={{ textAlign: "left", padding: "10px" }}>ID</th>
+        <th style={{ textAlign: "left", padding: "10px" }}>Code</th>
+        <th style={{ textAlign: "left", padding: "10px" }}>Operating Unit</th>
+        <th style={{ textAlign: "left", padding: "10px" }}>Status</th>
+        <th style={{ textAlign: "left", padding: "10px" }}>Actions</th>
+    </tr>
+</thead>
+
+        <tbody>
+    {operatingUnits.map(unit => (
+        <tr key={unit.id}>
+            <td style={{ padding: "10px" }}>{unit.id}</td>
+            <td style={{ padding: "10px" }}>{unit.code}</td>
+            <td style={{ padding: "10px" }}>{unit.name}</td>
+            <td style={{ padding: "10px" }}>{unit.status}</td>
+            <td style={{ padding: "10px" }}>
+                Coming Soon
+            </td>
+        </tr>
+    ))}
+</tbody>
+
+    </table>
+
+</div>
+
+)}
 
  {/* ===================== FOOTER ===================== */}
 <footer

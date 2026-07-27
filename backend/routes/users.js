@@ -15,16 +15,42 @@ router.get(
 
   try {
 
-    const [results] = await db.query(`
-      SELECT
-        id,
-        username,
-        role,
-        operatingUnit,
-      focalship
-      FROM users
-      ORDER BY id ASC
+ let results;
+
+if (req.user.role === "system_admin") {
+
+    [results] = await db.query(`
+        SELECT
+            id,
+            username,
+            role,
+            operatingUnit,
+            focalship,
+            status
+        FROM users
+        ORDER BY id ASC
     `);
+
+} else {
+
+  [results] = await db.query(
+`
+SELECT
+    id,
+    username,
+    role,
+    operatingUnit,
+    focalship,
+    status
+FROM users
+WHERE operatingUnit = ?
+AND role = 'user'
+ORDER BY id ASC
+`,
+[req.user.operatingUnit]
+);
+
+}
 
     res.json(results);
 

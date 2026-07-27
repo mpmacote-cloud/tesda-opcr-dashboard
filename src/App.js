@@ -215,18 +215,24 @@ localStorage.removeItem("focalship");
       <div className="dropdown-content">
 
         <div onClick={() => setActiveTab("opcr")}>
-          OPCR Dashboard
-        </div>
+    OPCR Dashboard
+</div>
 
-        {(isSystemAdmin || isAdministrator) && (
-          <div onClick={() => setActiveTab("users")}>
-            User Management
-          </div>
-        )}
+{(isSystemAdmin || isAdministrator) && (
+    <div onClick={() => setActiveTab("users")}>
+        User Management
+    </div>
+)}
 
-        <div>
-          Bukidnon TVET Situationer
-        </div>
+{isSystemAdmin && (
+    <div onClick={() => setActiveTab("operatingUnits")}>
+        Master Data
+    </div>
+)}
+
+<div>
+    Bukidnon TVET Situationer
+</div>
 
       </div>
     </div>
