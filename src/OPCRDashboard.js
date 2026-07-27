@@ -21,7 +21,7 @@ function OPCRDashboard({
     setActiveTab
 }) {
 
-  const focalshipsoptions = {
+ /* const focalshipsoptions = {
     "PO BUKIDNON": [
         "JCDD",
         "APB",
@@ -34,7 +34,7 @@ function OPCRDashboard({
         "DAC",
         "Faith"
     ]
-};
+}; */
 console.log("Logged in Operating Unit:", operatingUnit);
   const chartRef = useRef(null);
   const kpiInputRef = useRef(null);
