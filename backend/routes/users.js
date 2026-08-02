@@ -197,6 +197,55 @@ router.delete(
   }
 });
 
+/* ================= TOGGLE USER STATUS ================= */
+
+router.put(
+  "/:id/status",
+  authenticateToken,
+  authorize("system_admin", "administrator"),
+  async (req, res) => {
+
+    try {
+
+      const [rows] = await db.query(
+        "SELECT status FROM users WHERE id=?",
+        [req.params.id]
+      );
+
+      if (rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found."
+        });
+      }
+
+      const newStatus =
+        rows[0].status === "ACTIVE"
+          ? "INACTIVE"
+          : "ACTIVE";
+
+      await db.query(
+        "UPDATE users SET status=? WHERE id=?",
+        [newStatus, req.params.id]
+      );
+
+      res.json({
+        success: true,
+        status: newStatus
+      });
+
+    } catch (err) {
+
+      console.error(err);
+
+      res.status(500).json({
+        success: false,
+        message: "Unable to update user status."
+      });
+
+    }
+
+});
 /* ================= LOGIN ================= */
 
 
@@ -255,7 +304,8 @@ router.post("/login", async (req, res) => {
       password,
       role,
       operatingUnit,
-      focalship
+      focalship,
+      status
    FROM users
    WHERE username = ?`,
   [username]
@@ -281,6 +331,12 @@ if (!validPassword) {
   });
 }
 
+if (user.status !== "ACTIVE") {
+  return res.json({
+    success: false,
+    message: "Your account is currently inactive. Please contact your System Administrator."
+  });
+}
  const token = jwt.sign(
 {
   id: user.id,

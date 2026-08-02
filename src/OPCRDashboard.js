@@ -1,14 +1,39 @@
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
+import { buttonStyles } from "./styles/buttonStyles";
+
+import ChartsSection from "./components/charts/ChartsSection";
+
+import AnalyticsSection from "./components/charts/AnalyticsSection";
+
+//import KPIPerformanceChart from "./components/charts/KPIPerformanceChart";
+
+import OperatingUnitPerformanceChart from "./components/charts/OperatingUnitPerformanceChart";
+
+import DashboardOverview from "./components/dashboard/DashboardOverview";
+
+
+// React
 import React, { useState, useEffect, useRef } from "react";
+
+// API
 import { apiFetch } from "./api";
 
+// Charts
 import {
-  BarChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell  // <-- add PieChart, Pie, Cell here
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart,
+  Pie,
+  Cell
 } from "recharts";
 
-
+// Export
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
@@ -21,31 +46,15 @@ function OPCRDashboard({
     setActiveTab
 }) {
 
- /* const focalshipsoptions = {
-    "PO BUKIDNON": [
-        "JCDD",
-        "APB",
-        "HCC",
-        "JBJ",
-        "DAC"
-    ],
 
-    "PTC BUKIDNON": [
-        "DAC",
-        "Faith"
-    ]
-}; */
 console.log("Logged in Operating Unit:", operatingUnit);
   const chartRef = useRef(null);
   const kpiInputRef = useRef(null);
   const PIE_COLORS = ["#4caf50", "#e0e0e0"];
 
-  /* ===================== DATA ===================== */
-  /* const defaultData = [
-  { id: 1, year: 2025, operatingUnit: "PO BUKIDNON", pap: "TESD Program", kpi: "Beneficiaries", target: 100, accomplishment: 60, timeline: "Semestral", focalPerson: "JCDD" },
-  { id: 2, year: 2025, operatingUnit: "PO BUKIDNON", pap: "Certification", kpi: "Trainees", target: 50, accomplishment: 45, timeline: "Quarterly", focalPerson: "HCC" }
-];*/
-
+/* ===========================
+   OPCR DATA
+=========================== */
 
  const [opcrData, setOpcrData] = useState([]);
 
@@ -59,12 +68,12 @@ console.log("Logged in Operating Unit:", operatingUnit);
   timeline: "",
   focalPerson: ""
 });
-
-
   const [editId, setEditId] = useState(null);
  
+/* ===========================
+   FILTERS
+=========================== */
 
-  /* ===================== FILTERS ===================== */
   const [filterOperatingUnit, setFilterOperatingUnit] = useState("");
   const [filterPap, setFilterPap] = useState("");
   const [filterKpi, setFilterKpi] = useState("");
@@ -72,12 +81,11 @@ console.log("Logged in Operating Unit:", operatingUnit);
   const [filterYear, setFilterYear] = useState("");
   const [filterTimeline, setFilterTimeline] = useState("");
 
-  /* ===================== USERS ===================== */
+/* ===========================
+   USER MANAGEMENT
+=========================== */
+
 const [users, setUsers] = useState([]);
-
-const [operatingUnits, setOperatingUnits] = useState([]);
-
-const [focalships, setFocalships] = useState([]);
 const [newUser, setNewUser] = useState({
   username: "",
   password: "",
@@ -96,6 +104,20 @@ const [newUser, setNewUser] = useState({
   focalship: ""
 });
 
+/* ===========================
+   MASTER DATA
+=========================== */
+
+const [operatingUnits, setOperatingUnits] = useState([]);
+const [focalships, setFocalships] = useState([]);
+
+const [editOperatingUnit, setEditOperatingUnit] = useState(null);
+
+const [operatingUnitForm, setOperatingUnitForm] = useState({
+    code: "",
+    name: "",
+    status: "ACTIVE"
+    });
 
 const loadUsers = () => {
   apiFetch("/api/users")
@@ -166,6 +188,130 @@ const loadOperatingUnits = async () => {
   } catch (err) {
     console.error("Unable to load Operating Units", err);
   }
+};
+
+const toggleOperatingUnitStatus = async (unit) => {
+    try {
+
+        const newStatus =
+            unit.status === "ACTIVE"
+                ? "INACTIVE"
+                : "ACTIVE";
+
+        const res = await apiFetch(
+            `/api/master/operating-units/${unit.id}/status`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            }
+        );
+
+        const data = await res.json();
+
+        if (data.success) {
+
+            await loadOperatingUnits();
+
+        } else {
+
+            alert(data.message);
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+        alert("Unable to update Operating Unit status.");
+
+    }
+};
+
+const saveOperatingUnit = async () => {
+
+    try {
+
+        if (
+            !operatingUnitForm.code.trim() ||
+            !operatingUnitForm.name.trim()
+        ) {
+
+            alert("Please complete all required fields.");
+            return;
+
+        }
+
+        let res;
+
+        if (editOperatingUnit === null) {
+
+            // ADD
+
+            res = await apiFetch(
+                "/api/master/operating-units",
+                {
+                    method: "POST",
+                    body: JSON.stringify(operatingUnitForm)
+                }
+            );
+
+        } else {
+
+            // EDIT
+
+            res = await apiFetch(
+                `/api/master/operating-units/${editOperatingUnit}`,
+                {
+                    method: "PUT",
+                    body: JSON.stringify(operatingUnitForm)
+                }
+            );
+
+        }
+
+        const data = await res.json();
+
+        if (!data.success) {
+
+            alert(data.message);
+            return;
+
+        }
+
+        await loadOperatingUnits();
+
+        setOperatingUnitForm({
+            code: "",
+            name: "",
+            status: "ACTIVE"
+        });
+
+        setEditOperatingUnit(null);
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert("Unable to save Operating Unit.");
+
+    }
+
+};
+
+const cancelOperatingUnit = () => {
+
+    setEditOperatingUnit(null);
+
+    setOperatingUnitForm({
+        code: "",
+        name: "",
+        status: "ACTIVE"
+    });
+
 };
 
 const loadFocalships = async () => {
@@ -320,27 +466,6 @@ const yearlyPerformanceData = Object.values(
   rating: Number(((y.totalRating / y.count) * 100).toFixed(1))
 }));
 
-// Yearly Overall Accomplishment (%) — average across all PAP/KPI for the selected year
-/*const yearlyOverallAccomplishment = filteredData.reduce((acc, d) => {
-  if (!d.year) return acc;
-  return acc + (d.target
-  ? Math.min(d.accomplishment / d.target, 1)
-  : 0);
-}, 0);
-
-const totalItems = filteredData.length || 1; // prevent divide by zero
-
-/*const yearlyOverallAccomplishmentData = [
-  {
-    name: "Accomplished",
-    value: Number(((yearlyOverallAccomplishment / totalItems) * 100).toFixed(1))
-  },
-  {
-    name: "Remaining",
-    value: Number((100 - ((yearlyOverallAccomplishment / totalItems) * 100)).toFixed(1))
-  }
-];*/
-
   // PAP Performance Rating (%)
   const papPerformanceData = Object.values(
     filteredData.reduce((acc, d) => {
@@ -432,7 +557,8 @@ const lowestPerformingKPIs = [...filteredData]
   .sort((a, b) => a.rating - b.rating)
   .slice(0, 10);
   
-// TOP 5 BEST PERFORMING KPIs
+
+  // TOP 5 BEST PERFORMING KPIs
 const topBestKPIs = [...filteredData]
   .map(d => ({
     ...d,
@@ -543,7 +669,7 @@ return (
       lineHeight: 1.2
     }}
   >
-    TESDA Bukidnon Monitoring System
+    TESDA Bukidnon Performance Management Information System (TBPMIS)
   </h1>
 
   <div
@@ -617,15 +743,22 @@ return (
   value={filterOperatingUnit}
   onChange={(e) => setFilterOperatingUnit(e.target.value)}
   style={filterStyle}
-
 >
   <option value="">All Operating Units</option>
-  <option value="PO BUKIDNON">PO BUKIDNON</option>
-  <option value="PTC BUKIDNON">PTC BUKIDNON</option>
-  
+
+  {operatingUnits
+    .filter(unit => unit.status === "ACTIVE")
+    .map(unit => (
+      <option
+        key={unit.id}
+        value={unit.name}
+      >
+        {unit.name}
+      </option>
+    ))}
 </select>
 
-            <select
+<select
   value={filterPap}
   onChange={e => setFilterPap(e.target.value)}
   style={filterStyle}
@@ -701,273 +834,41 @@ setFilterTimeline(""); }}>
             </button>
           </div>
 </div>
-<h3
-  style={{
-    marginBottom: 12,
-    marginTop: 10,
-    color: "#0038A8",
-    fontWeight: "bold",
-    borderLeft: "5px solid #0038A8",
-    paddingLeft: 10
-  }}
->
 
-  
-  Summary Cards
-</h3>
-{/* SUMMARY CARDS */}
-
- <div
-  style={{
-    display: "grid",
-    gridTemplateColumns:
-      "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 20
-  }}
->
- <SummaryCard
-  title="Total KPIs"
-  value={totalKPIs}
-  color="#1976d2"
+<DashboardOverview
+  totalKPIs={totalKPIs}
+  completedKPIs={completedKPIs}
+  ongoingKPIs={ongoingKPIs}
+  delayedKPIs={delayedKPIs}
+  overallRating={overallRating}
+  SummaryCard={SummaryCard}
 />
 
-<SummaryCard
-  title="Completed"
-  value={completedKPIs}
-  color="#4caf50"
+<OperatingUnitPerformanceChart
+  operatingUnitPerformanceData={operatingUnitPerformanceData}
+  getRatingColor={getRatingColor}
+  ChartBox={ChartBox}
+  LegendItem={LegendItem}
 />
 
-<SummaryCard
-  title="Ongoing"
-  value={ongoingKPIs}
-  color="#ff9800"
+  <AnalyticsSection
+  yearlyOverallData={yearlyOverallData}
+  PIE_COLORS={PIE_COLORS}
+  focalPerformanceData={focalPerformanceData}
+  getRatingColor={getRatingColor}
+  ChartBox={ChartBox}
+  LegendItem={LegendItem}
 />
 
-<SummaryCard
-  title="Delayed"
-  value={delayedKPIs}
-  color="#f44336"
+<ChartsSection
+  chartRef={chartRef}
+  kpiChartData={kpiChartData}
+  papPerformanceData={papPerformanceData}
+  yearlyPerformanceData={yearlyPerformanceData}
+  getRatingColor={getRatingColor}
+  ChartBox={ChartBox}
+  LegendItem={LegendItem}
 />
-</div>
- 
-<div
-  style={{
-    display: "flex",
-    justifyContent: "center",
-    marginBottom: 35
-  }}
->
-
-  <OverallPerformanceGauge
-    value={overallRating}
-  />
-
-</div>
-
-  
-<h3
-  style={{
-    marginTop: 25,
-    marginBottom: 10,
-    color: "#E30613",
-    fontWeight: "bold"
-  }}
->
-
-{/* PERFORMANCE BY OPERATING UNIT */}
-
-<ChartBox title="Performance by Operating Unit (%)">
-  <BarChart data={operatingUnitPerformanceData}>
-    <CartesianGrid strokeDasharray="3 3" />
-
-    <XAxis
-  dataKey="unit"
-  angle={-20}
-  textAnchor="end"
-  height={50}
-  tick={{
-    fontSize: 10,
-    fontWeight: 500
-  }}
-/>
-
-    <YAxis
-      domain={[0, 100]}
-      tickFormatter={(v) => `${v}%`}
-    />
-
-    <Tooltip formatter={(v) => `${v}%`} />
-
-    <Bar dataKey="rating">
-      {operatingUnitPerformanceData.map((entry, index) => (
-        <Cell
-          key={index}
-          fill={getRatingColor(entry.rating)}
-        />
-      ))}
-    </Bar>
-  </BarChart>
-
-  <div
-    style={{
-      display: "flex",
-      gap: 15,
-      marginTop: 10,
-      fontSize: 12
-    }}
-  >
-    <LegendItem color="#f44336" label="0–50% Needs Improvement" />
-    <LegendItem color="#ffc107" label="51–74% Satisfactory" />
-    <LegendItem color="#4caf50" label="75–100% Outstanding" />
-  </div>
-</ChartBox>
-</h3>
-
-
-
-  <h3
-  style={{
-    marginBottom: 12,
-    marginTop: 60,
-    color: "#0038A8",
-    fontWeight: "bold",
-    borderLeft: "5px solid #0038A8",
-    paddingLeft: 10
-  }}
->
-  Performance Analytics & Charts
-</h3>
-
-             <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 20 }}>
- 
-
-  {/* Pie Chart */}
-  <div style={{ flex: 1, minWidth: 300 }}>
-    <ChartBox title="Yearly Overall Accomplishment (%)"
-       annotation="📌 Based on Filtered records">
-  <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
-  </div>
-      <PieChart width={300} height={300}>
-        <Pie
-  data={yearlyOverallData}
-  dataKey="value"
-  nameKey="name"
-  cx="50%"
-  cy="50%"
-  outerRadius={80}
-  label={({ value }) => `${value}%`} // show % on pie slices
->
-         {yearlyOverallData.map((entry, index) => (
-    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-  ))}
-</Pie>
-        <Tooltip formatter={v => `${v}%`} />
-        <Legend />
-      </PieChart>
-    </ChartBox>
-  </div>
-
-  {/* Focal Person Chart */}
-  <div style={{ flex: 1, minWidth: 300 }}>
-    <ChartBox title="Focal Person Performance Rating (%)">
-  <BarChart data={focalPerformanceData}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="name" />
-    <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} />
-    <Tooltip formatter={v => `${v}%`} />
-
-    <Bar dataKey="rating">
-      {focalPerformanceData.map((entry, index) => (
-        <Cell key={`cell-${index}`} fill={getRatingColor(entry.rating)} />
-      ))}
-    </Bar>
-  </BarChart>
-
-  {/* Legend */}
-  <div style={{ display: "flex", gap: 15, marginTop: 10, fontSize: 12 }}>
-    <LegendItem color="#f44336" label="0–50% (Needs Improvement)" />
-    <LegendItem color="#ffc107" label="51–74% (Satisfactory)" />
-    <LegendItem color="#4caf50" label="75–100% (Outstanding)" />
-  </div>
-</ChartBox>
-  </div>
-</div>
-
-
-
-          {/* CHARTS */}
-        
-         
-         
-          <div
-  ref={chartRef}
-  style={{
-    marginBottom: 50,
-    display: "flex",
-    flexDirection: "column",
-    gap: 35
-  }}
->
-           
-            <ChartBox title="KPI Target vs Accomplishment">
-              <BarChart data={kpiChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="Target" fill="#1976d2" />
-                <Bar dataKey="Accomplishment" fill="#4caf50" />
-              </BarChart>
-            </ChartBox>
-
-          <ChartBox title="PAP Performance Rating (%)">
-            <BarChart data={papPerformanceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="pap" />
-              <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} />
-              <Tooltip formatter={v => `${v}%`} />
-
-                <Bar dataKey="rating">
-                  {papPerformanceData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={getRatingColor(entry.rating)} />
-                ))}
-             </Bar>
-       </BarChart>
-
-  {/* Legend */}
-  <div style={{ display: "flex", gap: 15, marginTop: 10, fontSize: 12 }}>
-    <LegendItem color="#f44336" label="0–50% (Needs Improvement)" />
-    <LegendItem color="#ffc107" label="51–74% (Satisfactory)" />
-    <LegendItem color="#4caf50" label="75–100% (Outstanding)" />
-  </div>
-</ChartBox>
-
-
-
-           <ChartBox title="🔒 Yearly Performance Rating (%)"
-           annotation="📌 Based on all records (not affected by filters)">
-  <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
-  </div>
-
-  <BarChart data={yearlyPerformanceData}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="year" />
-    <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} />
-    <Tooltip formatter={v => `${v}%`} />
-
-    <Bar dataKey="rating" fill="#03a9f4" />
-    <Line
-      type="monotone"
-      dataKey="rating"
-      stroke="#ff5722"
-      strokeWidth={2}
-      dot={{ r: 4 }}
-    />
-  </BarChart>
-</ChartBox>
-
-          </div>
 
           <button onClick={exportChartToPDF} style={btn}>Export Charts PDF</button>
 
@@ -1216,7 +1117,7 @@ setFilterTimeline(""); }}>
       fontSize: 14
     }}
   >
-  <option value="">Select Operating Unit</option>
+  {/*<option value="">Select Operating Unit</option>
 
 {operatingUnits.map(unit => (
     <option
@@ -1224,6 +1125,18 @@ setFilterTimeline(""); }}>
         value={unit.name}
     >
         {unit.name}
+    </option>
+))}*/}
+<option value="">Select Operating Unit</option>
+
+{operatingUnits
+  .filter(unit => unit.status === "ACTIVE")
+  .map(unit => (
+    <option
+      key={unit.id}
+      value={unit.name}
+    >
+      {unit.name}
     </option>
 ))}
      
@@ -1398,7 +1311,7 @@ await apiFetch("/api/users", {
               })
     }
 >
-   <option value="">Select Operating Unit</option>
+   {/*<option value="">Select Operating Unit</option>
 
 {operatingUnits.map(unit => (
     <option
@@ -1406,6 +1319,18 @@ await apiFetch("/api/users", {
         value={unit.name}
     >
         {unit.name}
+    </option>
+))}*/}
+<option value="">Select Operating Unit</option>
+
+{operatingUnits
+  .filter(unit => unit.status === "ACTIVE")
+  .map(unit => (
+    <option
+      key={unit.id}
+      value={unit.name}
+    >
+      {unit.name}
     </option>
 ))}
 </select>
@@ -1494,7 +1419,7 @@ await apiFetch("/api/users", {
 
       <td>
         <button
-          style={btn}
+           style={buttonStyles.edit}
           onClick={() => {
             setEditUserIndex(user.id);
             setEditUserData(user);
@@ -1503,24 +1428,38 @@ await apiFetch("/api/users", {
           Edit
         </button>
 
-        <button
-          style={{
-            ...btn,
-            background: "#d32f2f",
-            marginLeft: 8
-          }}
-          onClick={async () => {
-            if (!window.confirm("Delete this user?")) return;
+       {user.role !== "system_admin" && (
 
-            await apiFetch(`/api/users/${user.id}`, {
-              method: "DELETE"
-            });
+  <button
+       style={
+        user.status === "ACTIVE"
+            ? buttonStyles.deactivate
+            : buttonStyles.activate
+    }
+    onClick={async () => {
+      const action =
+  user.status === "ACTIVE"
+    ? "deactivate"
+    : "activate";
 
-            loadUsers();
-          }}
-        >
-          Delete
-        </button>
+if (!window.confirm(`Are you sure you want to ${action} this user?`)) {
+  return;
+}
+
+     await apiFetch(`/api/users/${user.id}/status`, {
+    method: "PUT"
+});
+
+      loadUsers();
+    }}
+  >
+    {user.status === "ACTIVE"
+        ? "Deactivate"
+        : "Activate"}
+  </button>
+
+)}
+
       </td>
     </tr>
   ))}
@@ -1537,9 +1476,159 @@ await apiFetch("/api/users", {
 
 <div style={box}>
 
-    <h2>Operating Unit Management</h2>
+    <div
+        style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 15
+        }}
+    >
+        <div>
+            <h2 style={{ margin: 0 }}>
+                Operating Unit Management
+            </h2>
 
-    <p>Manage all TESDA Operating Units here.</p>
+            <p
+                style={{
+                    marginTop: 5,
+                    color: "#666"
+                }}
+            >
+                Manage all TESDA Operating Units here.
+            </p>
+        </div>
+
+        <button
+            style={btn}
+            onClick={() => {
+                setEditOperatingUnit(null);
+
+                setOperatingUnitForm({
+                    code: "",
+                    name: "",
+                    status: "ACTIVE"
+                });
+            }}
+        >
+            + Add Operating Unit
+        </button>
+
+    </div>
+
+{/* ===========================
+    ADD / EDIT OPERATING UNIT
+=========================== */}
+
+<div
+  style={{
+    background: "#f8f9fa",
+    border: "1px solid #ddd",
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 20
+  }}
+>
+
+  <h3 style={{ marginTop: 0 }}>
+    {editOperatingUnit ? "Edit Operating Unit" : "Add Operating Unit"}
+  </h3>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 2fr 1fr",
+      gap: 15
+    }}
+  >
+
+    {/* CODE */}
+
+    <div>
+      <label>Code</label>
+
+      <input
+        type="text"
+        value={operatingUnitForm.code}
+        onChange={(e) =>
+          setOperatingUnitForm(prev => ({
+            ...prev,
+            code: e.target.value
+          }))
+        }
+        style={input}
+      />
+    </div>
+
+    {/* NAME */}
+
+    <div>
+      <label>Operating Unit</label>
+
+      <input
+        type="text"
+        value={operatingUnitForm.name}
+        onChange={(e) =>
+          setOperatingUnitForm(prev => ({
+            ...prev,
+            name: e.target.value
+          }))
+        }
+        style={input}
+      />
+    </div>
+
+    {/* STATUS */}
+
+    <div>
+      <label>Status</label>
+
+      <select
+        value={operatingUnitForm.status}
+        onChange={(e) =>
+          setOperatingUnitForm(prev => ({
+            ...prev,
+            status: e.target.value
+          }))
+        }
+        style={input}
+      >
+        <option value="ACTIVE">ACTIVE</option>
+        <option value="INACTIVE">INACTIVE</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div
+    style={{
+      marginTop: 20,
+      display: "flex",
+      gap: 10
+    }}
+  >
+
+   <button
+    style={buttonStyles.save}
+    onClick={saveOperatingUnit}
+>
+    {editOperatingUnit === null
+        ? "Save Operating Unit"
+        : "Save Changes"}
+</button>
+
+    {editOperatingUnit !== null && (
+    <button
+        style={buttonStyles.cancel}
+        onClick={cancelOperatingUnit}
+    >
+        Cancel
+    </button>
+)}
+
+  </div>
+
+</div>
 
     <table
         style={{
@@ -1571,9 +1660,39 @@ await apiFetch("/api/users", {
             <td style={{ padding: "10px" }}>{unit.code}</td>
             <td style={{ padding: "10px" }}>{unit.name}</td>
             <td style={{ padding: "10px" }}>{unit.status}</td>
-            <td style={{ padding: "10px" }}>
-                Coming Soon
-            </td>
+            <td style={{ padding: "10px", display: "flex", gap: "8px" }}>
+
+    <button
+        style={buttonStyles.edit}
+        onClick={() => {
+
+            setEditOperatingUnit(unit.id);
+
+            setOperatingUnitForm({
+                code: unit.code,
+                name: unit.name,
+                status: unit.status
+            });
+
+        }}
+    >
+        Edit
+    </button>
+
+  <button
+    style={
+        unit.status === "ACTIVE"
+            ? buttonStyles.deactivate
+            : buttonStyles.activate
+    }
+    onClick={() => toggleOperatingUnitStatus(unit)}
+>
+    {unit.status === "ACTIVE"
+        ? "Deactivate"
+        : "Activate"}
+</button>
+
+</td>
         </tr>
     ))}
 </tbody>
@@ -1840,91 +1959,6 @@ const SummaryCard = ({ title, value, color }) => {
 
 };
 
-/*------OVERALL PERFORMANCE GAUGE--------*/
-const OverallPerformanceGauge = ({ value }) => {
-
-  const color =
-    value >= 75
-      ? "#4caf50"
-      : value >= 50
-      ? "#ff9800"
-      : "#f44336";
-
-  return (
-
-    <div
-    style={{
-  background: "#fff",
-  borderRadius: 16,
-  padding: 20,
-  width: "100%",
-  maxWidth: 360,
-  margin: "0 auto",
-  boxShadow: "0 8px 20px rgba(0,0,0,.10)",
-  textAlign: "center"
-}}
-    >
-
-      <h3
-        style={{
-          color: "#0038A8",
-          marginBottom: 10
-        }}
-      >
-        Overall Performance Rating
-      </h3>
-
-      <div
-        style={{
-          width: 220,
-          height: 220,
-          margin: "auto"
-        }}
-      >
-        <CircularProgressbar
-          value={value}
-          text={`${value.toFixed(1)}%`}
-          styles={buildStyles({
-            pathColor: color,
-            textColor: color,
-            trailColor: "#eeeeee",
-            textSize: "16px"
-          })}
-        />
-      </div>
-
-      <h2
-        style={{
-          marginTop: 10,
-          color
-        }}
-      >
-        {
-          value >= 75
-            ? "Excellent"
-            : value >= 50
-            ? "Needs Attention"
-            : "Critical"
-
-    
-        }
-      </h2>
-<p
-  style={{
-    marginTop: 15,
-    color: "#666",
-    fontSize: 14
-  }}
->
-  Overall accomplishment across all KPIs
-</p>
-    </div>
-
-  );
-
-};
-
-
 /* ===================== STYLES ===================== */
 const container = {
   padding: 15,
@@ -1949,5 +1983,13 @@ const filterStyle = {
   borderRadius: 6,
   border: "1px solid #ccc",
   fontSize: 14
+};
+const input = {
+  width: "100%",
+  padding: "10px",
+  border: "1px solid #ccc",
+  borderRadius: "6px",
+  fontSize: "14px",
+  boxSizing: "border-box"
 };
 export default OPCRDashboard;

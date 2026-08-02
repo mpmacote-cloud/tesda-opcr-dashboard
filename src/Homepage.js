@@ -22,7 +22,7 @@ function Homepage({ role }) {
     <div>
       {/* --- Navbar --- */}
       <nav style={nav}>
-        <div style={logo}>TESDA Bukidnon</div>
+        <div style={logo}>TESDA Bukidnon TBPMIS</div>
 
         <div style={hamburger} onClick={() => setMenuOpen(!menuOpen)}>☰</div>
 

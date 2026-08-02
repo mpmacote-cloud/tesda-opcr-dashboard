@@ -208,6 +208,66 @@
   width: auto;
 }
 
+/* ---------- NAVBAR TITLE ---------- */
+
+.nav-title{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:0;
+  line-height:1;
+}
+
+.nav-title h3{
+  margin:0;
+  padding:0;
+  font-size:20px;
+  font-weight:700;
+  color:#fff;
+  line-height:1;
+}
+
+.nav-subtitle{
+  margin:0;
+  padding:0;
+  margin-top:-2px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:#FFD700;
+  text-transform:uppercase;
+  line-height:1;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-left: auto;
+
+  flex-wrap: nowrap;
+}
+
+.desktop-menu{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.nav-item {
+  position: relative;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  background-color: #002f80;
+}
 .nav-right {
   display: flex;
   align-items: center;
@@ -238,25 +298,6 @@
   background-color: #002f80;
 }
 
-/*.nav-user {
-  margin-left: 10px;
-}
-
-.logout-btn {
-  margin-left: 6px;
-  padding: 6px 12px; /* slightly smaller */
- /* border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  background-color: #E30613;
-  color: white;
-  font-weight: bold;
-  white-space: nowrap;
-} */
-
-/*.logout-btn:hover {
-  background-color: #b2050f;
-}
 
 /* ---------------- DROPDOWN ---------------- */
 .dropdown {

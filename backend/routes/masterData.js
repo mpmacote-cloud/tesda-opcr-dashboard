@@ -32,6 +32,189 @@ router.get("/operating-units", async (req, res) => {
     }
 });
 
+router.post("/operating-units", async (req, res) => {
+    try {
+
+        const { code, name, status } = req.body;
+
+        if (!code || !name) {
+            return res.status(400).json({
+                success: false,
+                message: "Code and Operating Unit are required."
+            });
+        }
+
+        // =========================================
+        // CHECK FOR DUPLICATE CODE OR NAME
+        // =========================================
+
+        const [existing] = await db.query(
+            `
+            SELECT id
+            FROM operating_units
+            WHERE code = ?
+               OR name = ?
+            `,
+            [code.trim(), name.trim()]
+        );
+
+        if (existing.length > 0) {
+            return res.json({
+                success: false,
+                message: "Operating Unit already exists."
+            });
+        }
+
+        // =========================================
+        // INSERT NEW OPERATING UNIT
+        // =========================================
+
+        await db.query(
+            `
+            INSERT INTO operating_units
+            (
+                code,
+                name,
+                status
+            )
+            VALUES (?, ?, ?)
+            `,
+            [
+                code.trim(),
+                name.trim(),
+                status || "ACTIVE"
+            ]
+        );
+
+        res.json({
+            success: true,
+            message: "Operating Unit added successfully."
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Unable to add operating unit."
+        });
+
+    }
+});
+
+router.put("/operating-units/:id", async (req, res) => {
+    try {
+
+        const { id } = req.params;
+        const { code, name, status } = req.body;
+
+        if (!code || !name) {
+            return res.status(400).json({
+                success: false,
+                message: "Code and Operating Unit are required."
+            });
+        }
+
+        // =========================================
+        // CHECK FOR DUPLICATE CODE OR NAME
+        // (excluding the current record)
+        // =========================================
+
+        const [existing] = await db.query(
+            `
+            SELECT id
+            FROM operating_units
+            WHERE (code = ? OR name = ?)
+              AND id <> ?
+            `,
+            [
+                code.trim(),
+                name.trim(),
+                id
+            ]
+        );
+
+        if (existing.length > 0) {
+            return res.json({
+                success: false,
+                message: "Another Operating Unit already uses this Code or Name."
+            });
+        }
+
+        // =========================================
+        // UPDATE
+        // =========================================
+
+        await db.query(
+            `
+            UPDATE operating_units
+            SET
+                code = ?,
+                name = ?,
+                status = ?
+            WHERE id = ?
+            `,
+            [
+                code.trim(),
+                name.trim(),
+                status,
+                id
+            ]
+        );
+
+        res.json({
+            success: true,
+            message: "Operating Unit updated successfully."
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Unable to update Operating Unit."
+        });
+
+    }
+});
+
+router.patch("/operating-units/:id/status", async (req, res) => {
+    try {
+
+        const { id } = req.params;
+        const { status } = req.body;
+
+        await db.query(
+            `
+            UPDATE operating_units
+            SET status = ?
+            WHERE id = ?
+            `,
+            [
+                status,
+                id
+            ]
+        );
+
+        res.json({
+            success: true,
+            message: "Operating Unit status updated."
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Unable to update status."
+        });
+
+    }
+});
+
 // ==========================
 // GET ALL FOCALSHIPS
 // ==========================

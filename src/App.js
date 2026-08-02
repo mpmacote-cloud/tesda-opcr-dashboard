@@ -1,24 +1,42 @@
+import Navbar from "./components/layout/Navbar";
+import MobileMenu from "./components/layout/MobileMenu";
+import LoginForm from "./components/LoginForm";
+// React
 import { useState, useEffect } from "react";
+// Components
 import OPCRDashboard from "./OPCRDashboard";
+// Third-party Libraries
 import Particles from "react-tsparticles";
-import "./App.css";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+// Styles
 import "react-toastify/dist/ReactToastify.css";
-import { toast } from "react-toastify";
+import "./App.css";
+
 
 
 
 function App() {
-  const [role, setRole] = useState(null);
-  const [showLogin, setShowLogin] = useState(false);
-  const [loginData, setLoginData] = useState({ username: "", password: "" });
-  const [showPrivacy, setShowPrivacy] = useState(true);
-  const [activeTab, setActiveTab] = useState("opcr");
-  const [operatingUnit, setOperatingUnit] = useState("");
+// Authentication
+const [role, setRole] = useState(null);
+const [showLogin, setShowLogin] = useState(false);
+
+const [loginData, setLoginData] = useState({
+    username: "",
+    password: ""
+});
+
+// User Context
+const [operatingUnit, setOperatingUnit] = useState("");
 const [focalship, setFocalship] = useState("");
+
+// Navigation
+const [activeTab, setActiveTab] = useState("opcr");
 const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+// UI
+const [showPrivacy, setShowPrivacy] = useState(true);
  
-  
+  // Load Saved Session
   useEffect(() => {
 
   const token = localStorage.getItem("token");
@@ -29,26 +47,20 @@ const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   if (token && savedRole) {
 
     setRole(savedRole);
-
     setOperatingUnit(savedOperatingUnit || "");
-
     setFocalship(savedFocalship || "");
-
   }
-
 }, []);
 
+// Role Helpers
 const isSystemAdmin = role === "system_admin";
-
 const isAdministrator = role === "administrator";
 
-
-
+// Authentication
   const handleLogin = async (e) => {
   e.preventDefault();
 
   try {
-    console.log("API URL:", process.env.REACT_APP_API_URL);
     const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/login`, {
       method: "POST",
       headers: {
@@ -59,9 +71,12 @@ const isAdministrator = role === "administrator";
 
     const result = await response.json();
 
-   if (result.success) {
+ if (!result.success) {
+  toast.error(result.message || "Invalid username or password!");
+return;
+}
 
- localStorage.setItem("token", result.token);
+localStorage.setItem("token", result.token);
 localStorage.setItem("role", result.role);
 localStorage.setItem("username", result.username);
 localStorage.setItem("operatingUnit", result.operatingUnit);
@@ -77,11 +92,6 @@ setLoginData({
   username: "",
   password: "",
 });
-}
-    
-    else {
-      toast.error("Invalid username or password!");
-    }
   } catch (err) {
     console.error(err);
     toast.error("Cannot connect to the server.");
@@ -96,18 +106,26 @@ localStorage.removeItem("username");
 localStorage.removeItem("operatingUnit");
 localStorage.removeItem("focalship");
 
-
   setRole(null);
   setOperatingUnit("");
   setFocalship("");
- /* setUsername("");*/
 
 };
+  // ---------- DASHBOARD PAGE ----------
+ return (
+  <>
+    <ToastContainer
+      position="top-right"
+      autoClose={3000}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick
+      pauseOnHover
+    />
 
-  // ---------- HOMEPAGE ----------
-  if (!role) {
-    return (
-      <div className="tesda-bg">
+    {!role ? (
+
+         <div className="tesda-bg">
         <Particles
           options={{
             background: { color: "transparent" },
@@ -133,28 +151,14 @@ localStorage.removeItem("focalship");
             <button onClick={() => setShowLogin(true)} className="home-btn">Login</button>
           </div>
 
-          {showLogin && (
-            <form onSubmit={handleLogin} className="login-form">
-              <h3>Login</h3>
-              <input
-                type="text"
-                placeholder="Username"
-                value={loginData.username}
-                onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={loginData.password}
-                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-              />
-              <div className="login-buttons">
-                <button type="submit" className="login-btn">Login</button>
-                <button type="button" onClick={() => setShowLogin(false)} className="cancel-btn">Cancel</button>
-              </div>
-            </form>
-          )}
-
+{showLogin && (
+  <LoginForm
+    loginData={loginData}
+    setLoginData={setLoginData}
+    handleLogin={handleLogin}
+    setShowLogin={setShowLogin}
+  />
+)}
           {showPrivacy && (
             <div className="privacy-banner">
               <p>
@@ -181,179 +185,39 @@ localStorage.removeItem("focalship");
           )}
         </div>
       </div>
-    );
-  }
+    ) : (
+      <div>
 
-  // ---------- DASHBOARD PAGE ----------
-  return (
-    <div>
-      {/* NAVBAR */}
-      <div className="navbar">
-        <div className="nav-left">
-          <img src="/tesda-logo.png" alt="TESDA Logo" className="nav-logo" />
-          <h3>TESDA Bukidnon</h3>
-        </div>
-        <div className="nav-right">
+        <Navbar
+          isSystemAdmin={isSystemAdmin}
+          isAdministrator={isAdministrator}
+          setActiveTab={setActiveTab}
+          handleLogout={handleLogout}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+        />
 
-  {/* Desktop Menu */}
-  <div className="desktop-menu">
+        <MobileMenu
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          isSystemAdmin={isSystemAdmin}
+          isAdministrator={isAdministrator}
+          setActiveTab={setActiveTab}
+          handleLogout={handleLogout}
+        />
 
-    <div
-      className="nav-item"
-      onClick={() => window.location.reload()}
-    >
-      Home
-    </div>
+        <OPCRDashboard
+          role={role}
+          operatingUnit={operatingUnit}
+          focalship={focalship}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
 
-    <div className="nav-item">
-      About Us
-    </div>
-
-    <div className="dropdown nav-item">
-      Monitoring System
-
-      <div className="dropdown-content">
-
-        <div onClick={() => setActiveTab("opcr")}>
-    OPCR Dashboard
-</div>
-
-{(isSystemAdmin || isAdministrator) && (
-    <div onClick={() => setActiveTab("users")}>
-        User Management
-    </div>
-)}
-
-{isSystemAdmin && (
-    <div onClick={() => setActiveTab("operatingUnits")}>
-        Master Data
-    </div>
-)}
-
-<div>
-    Bukidnon TVET Situationer
-</div>
-
-      </div>
-    </div>
-
-    <div className="user-menu">
-
-      <div className="user-button">
-
-        👤
-
-        <span>
-          {
-            isSystemAdmin
-              ? "System Administrator"
-              : isAdministrator
-              ? "Administrator"
-              : "User"
-          }
-        </span>
-
-        ▼
-
-      </div>
-
-      <div className="user-dropdown">
-
-        <div
-          className="logout-item"
-          onClick={handleLogout}
-        >
-          Logout
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-  {/* Mobile Hamburger */}
-  <button
-    className="hamburger"
-    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-  >
-    ☰
-  </button>
-
-</div>
-   </div>
-
-{mobileMenuOpen && (
-  <div className="mobile-menu">
-
-    <div
-      className="mobile-item"
-      onClick={() => {
-        window.location.reload();
-        setMobileMenuOpen(false);
-      }}
-    >
-      🏠 Home
-    </div>
-
-    <div
-      className="mobile-item"
-      onClick={() => {
-        setActiveTab("opcr");
-        setMobileMenuOpen(false);
-      }}
-    >
-      📊 OPCR Dashboard
-    </div>
-
-    {(isSystemAdmin || isAdministrator) && (
-      <div
-        className="mobile-item"
-        onClick={() => {
-          setActiveTab("users");
-          setMobileMenuOpen(false);
-        }}
-      >
-        👥 User Management
       </div>
     )}
 
-    <div className="mobile-item">
-      📈 Bukidnon TVET Situationer
-    </div>
-
-    <div
-      className="mobile-item"
-      onClick={() => {
-        handleLogout();
-        setMobileMenuOpen(false);
-      }}
-    >
-      🚪 Logout
-    </div>
-
-  </div>
-)}
-
-
-<OPCRDashboard
-    role={role}
-    operatingUnit={operatingUnit}
-    focalship={focalship}
-    activeTab={activeTab}
-    setActiveTab={setActiveTab}
-/>
-
-<ToastContainer
-  position="top-right"
-  autoClose={3000}
-  hideProgressBar={false}
-  newestOnTop
-  closeOnClick
-  pauseOnHover
-/>
-    </div>
-  );
+  </>
+);
 }
-
 export default App;

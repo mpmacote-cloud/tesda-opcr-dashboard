@@ -20,7 +20,7 @@ app.use(
       "http://localhost:3000",
       "https://tesda-opcr-dashboard.vercel.app"
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true
   })
 );
