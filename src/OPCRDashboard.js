@@ -10,6 +10,7 @@ import OperatingUnitPerformanceChart from "./components/charts/OperatingUnitPerf
 
 import DashboardOverview from "./components/dashboard/DashboardOverview";
 
+import { ResponsiveContainer } from "recharts";
 
 // React
 import React, { useState, useEffect, useRef } from "react";
