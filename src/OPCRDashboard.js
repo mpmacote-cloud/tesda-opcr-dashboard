@@ -17,22 +17,6 @@ import React, { useState, useEffect, useRef } from "react";
 // API
 import { apiFetch } from "./api";
 
-// Charts
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts";
-
 // Export
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
