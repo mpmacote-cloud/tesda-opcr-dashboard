@@ -1,3 +1,5 @@
+import MasterData from "./components/masterdata/MasterData";
+
 import { buttonStyles } from "./styles/buttonStyles";
 
 import ChartsSection from "./components/charts/ChartsSection";
@@ -98,11 +100,26 @@ const [focalships, setFocalships] = useState([]);
 
 const [editOperatingUnit, setEditOperatingUnit] = useState(null);
 
+const [editFocalship, setEditFocalship] = useState(null);
+
+const [focalshipForm, setFocalshipForm] = useState({
+    shortName: "",
+    fullName: "",
+    operatingUnitIds: [],
+    status: "ACTIVE"
+});
+
 const [operatingUnitForm, setOperatingUnitForm] = useState({
     code: "",
     name: "",
     status: "ACTIVE"
     });
+
+    /* ===========================
+   MASTER DATA TABS
+=========================== */
+
+const [masterDataTab, setMasterDataTab] = useState("operatingUnits");
 
 const loadUsers = () => {
   apiFetch("/api/users")
@@ -1102,16 +1119,7 @@ setFilterTimeline(""); }}>
       fontSize: 14
     }}
   >
-  {/*<option value="">Select Operating Unit</option>
 
-{operatingUnits.map(unit => (
-    <option
-        key={unit.id}
-        value={unit.name}
-    >
-        {unit.name}
-    </option>
-))}*/}
 <option value="">Select Operating Unit</option>
 
 {operatingUnits
@@ -1296,16 +1304,7 @@ await apiFetch("/api/users", {
               })
     }
 >
-   {/*<option value="">Select Operating Unit</option>
 
-{operatingUnits.map(unit => (
-    <option
-        key={unit.id}
-        value={unit.name}
-    >
-        {unit.name}
-    </option>
-))}*/}
 <option value="">Select Operating Unit</option>
 
 {operatingUnits
@@ -1683,6 +1682,54 @@ if (!window.confirm(`Are you sure you want to ${action} this user?`)) {
 </tbody>
 
     </table>
+
+</div>
+
+)}
+
+{activeTab === "masterData" && role === "system_admin" && (
+
+    <MasterData />
+
+)}
+
+{activeTab === "focalships" && role === "system_admin" && (
+
+<div style={box}>
+
+    <div
+        style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 15
+        }}
+    >
+
+        <div>
+
+            <h2 style={{ margin: 0 }}>
+                Focalship Management
+            </h2>
+
+            <p
+                style={{
+                    marginTop: 5,
+                    color: "#666"
+                }}
+            >
+                Manage TESDA Focalships here.
+            </p>
+
+        </div>
+
+        <button
+            style={btn}
+        >
+            + Add Focalship
+        </button>
+
+    </div>
 
 </div>
 

@@ -49,7 +49,7 @@ function MobileMenu({
       {isSystemAdmin && (
         <div
           className="mobile-item"
-          onClick={() => goTo("operatingUnits")}
+          onClick={() => goTo("masterData")}
         >
           🗂 Master Data
         </div>

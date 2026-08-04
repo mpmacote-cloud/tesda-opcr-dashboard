@@ -41,7 +41,7 @@ function DesktopMenu({
           )}
 
           {isSystemAdmin && (
-            <div onClick={() => goTo("operatingUnits")}>
+            <div onClick={() => goTo("masterData")}>
               Master Data
             </div>
           )}

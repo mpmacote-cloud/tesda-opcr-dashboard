@@ -32,6 +32,233 @@ router.get("/operating-units", async (req, res) => {
     }
 });
 
+router.get("/focalships", async (req, res) => {
+    try {
+
+        const [rows] = await db.query(`
+            SELECT
+
+                f.id,
+                f.shortName,
+                f.fullName,
+                f.status,
+
+                GROUP_CONCAT(
+                    ou.id
+                    ORDER BY ou.name
+                ) AS operatingUnitIds,
+
+                GROUP_CONCAT(
+                    ou.name
+                    ORDER BY ou.name
+                ) AS operatingUnitNames
+
+            FROM focalships f
+
+            LEFT JOIN focalship_operating_units fou
+                ON fou.focalshipId = f.id
+
+            LEFT JOIN operating_units ou
+                ON ou.id = fou.operatingUnitId
+
+            GROUP BY
+                f.id,
+                f.shortName,
+                f.fullName,
+                f.status
+
+            ORDER BY f.fullName
+        `);
+
+        const formatted = rows.map(row => ({
+
+    ...row,
+
+    operatingUnitIds:
+        row.operatingUnitIds
+            ? row.operatingUnitIds
+                  .split(",")
+                  .map(Number)
+            : [],
+
+    operatingUnitNames:
+        row.operatingUnitNames
+            ? row.operatingUnitNames.split(",")
+            : []
+
+}));
+
+res.json(formatted);
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Unable to load focalships."
+        });
+
+    }
+});
+
+// ======================================================
+// ADD FOCALSHIP
+// ======================================================
+
+router.post("/focalships", async (req, res) => {
+
+    const connection = await db.getConnection();
+
+    try {
+
+        await connection.beginTransaction();
+
+       // =========================================
+// READ REQUEST
+// =========================================
+
+const {
+
+    shortName,
+
+    fullName,
+
+    operatingUnitIds,
+
+    status
+
+} = req.body;
+// =========================================
+// VALIDATION
+// =========================================
+
+if (
+
+    !shortName ||
+
+    !fullName ||
+
+    !Array.isArray(operatingUnitIds) ||
+
+    operatingUnitIds.length === 0
+
+) {
+
+    return res.status(400).json({
+
+        success: false,
+
+        message:
+            "Short Name, Full Name and at least one Operating Unit are required."
+
+    });
+
+}
+
+// =========================================
+// CHECK DUPLICATES
+// =========================================
+
+const [existing] = await connection.query(
+    `
+    SELECT id
+    FROM focalships
+    WHERE shortName = ?
+       OR fullName = ?
+    `,
+    [
+        shortName.trim(),
+        fullName.trim()
+    ]
+);
+
+if (existing.length > 0) {
+
+    return res.json({
+
+        success: false,
+
+        message:
+            "Focalship already exists."
+
+    });
+
+}
+
+// =========================================
+// INSERT FOCALSHIP
+// =========================================
+
+const [result] = await connection.query(
+    `
+    INSERT INTO focalships
+    (
+        shortName,
+        fullName,
+        status
+    )
+    VALUES (?, ?, ?)
+    `,
+    [
+        shortName.trim(),
+        fullName.trim(),
+        status || "ACTIVE"
+    ]
+);
+
+const focalshipId = result.insertId;
+
+// =========================================
+// INSERT OPERATING UNIT ASSIGNMENTS
+// =========================================
+
+for (const operatingUnitId of operatingUnitIds) {
+
+    await connection.query(
+        `
+        INSERT INTO focalship_operating_units
+        (
+            focalshipId,
+            operatingUnitId
+        )
+        VALUES (?, ?)
+        `,
+        [
+            focalshipId,
+            operatingUnitId
+        ]
+    );
+
+}
+
+        await connection.commit();
+
+        res.json({
+            success: true,
+            message: "Focalship added successfully."
+        });
+
+    } catch (err) {
+
+        await connection.rollback();
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Unable to add focalship."
+        });
+
+    } finally {
+
+        connection.release();
+
+    }
+
+});
+
+
 router.post("/operating-units", async (req, res) => {
     try {
 
@@ -64,6 +291,7 @@ router.post("/operating-units", async (req, res) => {
                 message: "Operating Unit already exists."
             });
         }
+
 
         // =========================================
         // INSERT NEW OPERATING UNIT
