@@ -100,14 +100,14 @@ const [focalships, setFocalships] = useState([]);
 
 const [editOperatingUnit, setEditOperatingUnit] = useState(null);
 
-const [editFocalship, setEditFocalship] = useState(null);
+/*const [editFocalship, setEditFocalship] = useState(null);*/
 
-const [focalshipForm, setFocalshipForm] = useState({
+/*const [focalshipForm, setFocalshipForm] = useState({
     shortName: "",
     fullName: "",
     operatingUnitIds: [],
     status: "ACTIVE"
-});
+});*/
 
 const [operatingUnitForm, setOperatingUnitForm] = useState({
     code: "",
