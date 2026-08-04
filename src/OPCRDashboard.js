@@ -119,7 +119,7 @@ const [operatingUnitForm, setOperatingUnitForm] = useState({
    MASTER DATA TABS
 =========================== */
 
-const [masterDataTab, setMasterDataTab] = useState("operatingUnits");
+/*const [masterDataTab, setMasterDataTab] = useState("operatingUnits");*/
 
 const loadUsers = () => {
   apiFetch("/api/users")
